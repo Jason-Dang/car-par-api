@@ -17,7 +17,27 @@ Simple car park management API with in-memory storage
 - The Vehicle Type argument should be either 1, 2 or 3
 
 
-### Endpoints:
+### Data Model Notes
+
+- Parking Spaces
+  - availableSpaces : Collection<availableSpace>
+    - availableSpace : Entity
+      - spaceNumber : Integer | Primary Key
+  - occupiedSpaces : Collection<occupiedSpace>
+    - occupiedSpace : Entity
+      - spaceNumber : Integer | Primary Key
+      - vehicleReg : String | Index
+      - vehicleType : Integer
+      - timeIn : Datetime
+
+- bill
+  - billId - String | Primary Key
+  - vehicleReg - String | Index
+  - vehicleCharge - Double | BigDecimal?
+  - timeIn - Datetime
+  - timeOut - Datetime
+
+### Endpoints
 #### 1. `GET /parking`
 
 - Description: Gets available and occupied number of spaces
