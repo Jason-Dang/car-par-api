@@ -19,7 +19,7 @@ Simple car park management API with in-memory storage
 
 ### Data Model Notes
 
-- Parking Spaces
+- Spaces
   - availableSpaces : Collection<availableSpace>
     - availableSpace : Entity
       - spaceNumber : Integer | Primary Key
@@ -30,7 +30,7 @@ Simple car park management API with in-memory storage
       - vehicleType : Integer
       - timeIn : Datetime
 
-- bill
+- Bill
   - billId - String | Primary Key
   - vehicleReg - String | Index
   - vehicleCharge - Double | BigDecimal?
