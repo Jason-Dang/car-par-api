@@ -19,7 +19,7 @@ public class ParkingSpace {
     @Column(name="timeIn", length=18)
     private LocalDateTime timeIn;
 
-    protected ParkingSpace() {}
+    public ParkingSpace() {}
 
     public ParkingSpace(String vehicleReg, Integer vehicleType, LocalDateTime timeIn) {
         this.vehicleReg = vehicleReg;
@@ -41,5 +41,17 @@ public class ParkingSpace {
 
     public LocalDateTime getTimeIn() {
         return this.timeIn;
+    }
+
+    public void setVehicleReg(String vehicleReg) {
+        this.vehicleReg = vehicleReg;
+    }
+
+    public void setVehicleType(Integer vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
+    public void setTimeIn(LocalDateTime timeIn) {
+        this.timeIn = timeIn;
     }
 }

@@ -5,11 +5,11 @@ import com.tds.carparkapi.model.dto.ParkingSpacesInventoryDTO;
 import com.tds.carparkapi.model.entity.ParkingBill;
 import com.tds.carparkapi.model.entity.ParkingSpace;
 import com.tds.carparkapi.model.dto.ParkingBillDTO;
+import com.tds.carparkapi.model.entity.ParkingSpacesInventory;
 import com.tds.carparkapi.respository.ParkingBillRepository;
+import com.tds.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.tds.carparkapi.respository.ParkingSpaceRepository;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Service
 public class ParkingService {
@@ -26,6 +25,9 @@ public class ParkingService {
 
     @Autowired
     private ParkingSpaceRepository parkingSpaceRepository;
+
+    @Autowired
+    private ParkingSpaceInventoryRepository parkingSpaceInventoryRepository;
 
     private ParkingBillDTO mapToParkingBillDTO(ParkingBill parkingBill) {
         return new ParkingBillDTO(
@@ -45,6 +47,13 @@ public class ParkingService {
         );
     }
 
+    private ParkingSpacesInventoryDTO mapToParkingSpacesInventoryDTO(ParkingSpacesInventory parkingSpacesInventory) {
+        return new ParkingSpacesInventoryDTO(
+                parkingSpacesInventory.getAvailableSpaces(),
+                parkingSpacesInventory.getOccupiedSpaces()
+        );
+    }
+
     private Double getMinuteRate(Integer vehicleType) {
         if (vehicleType == 1) {
             return .1;
@@ -57,60 +66,55 @@ public class ParkingService {
         return .4;
     }
 
-    public Map<String, Integer> initialiseParkingSpacesInventory(HttpServletRequest request, Integer availableSpaces) {
-        HttpSession session = request.getSession();
+    public ParkingSpacesInventoryDTO getParkingSpacesInventory() {
+        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
-        if (session.getAttribute("availableSpaces") == null) {
-            session.setAttribute("availableSpaces", availableSpaces);
-        }
+        return mapToParkingSpacesInventoryDTO(parkingSpacesInventory);
+    }
 
-        if (session.getAttribute("occupiedSpaces") == null) {
-            session.setAttribute("occupiedSpaces", 0);
-        }
+    private void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
+        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
-        return Map.of(
-                "availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()),
-                "occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString())
+        parkingSpacesInventory.setAvailableSpaces(
+                Integer.parseInt(parkingSpacesInventory.getAvailableSpaces().toString()) + (allocatedParkingSpace ? -1 : 1)
         );
+        parkingSpacesInventory.setOccupiedSpaces(
+                Integer.parseInt(parkingSpacesInventory.getOccupiedSpaces().toString()) + (allocatedParkingSpace ? 1 : -1)
+        );
+
+        parkingSpaceInventoryRepository.save(parkingSpacesInventory);
     }
 
-    public ParkingSpacesInventoryDTO getParkingSpacesInventory(Integer availableSpaces, Integer occupiedSpaces) {
-        return new ParkingSpacesInventoryDTO(availableSpaces, occupiedSpaces);
-    }
+    public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
+        ParkingSpace alreadyAllocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
 
-    public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(
-        String vehicleReg,
-        Integer vehicleType,
-        HttpServletRequest request
-    ) {
-        ParkingSpace existingParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
-
-        if (existingParkingSpace != null) {
-            return mapToOccupiedParkingSpaceDTO(existingParkingSpace);
+        if (alreadyAllocatedParkingSpace != null) {
+            return mapToOccupiedParkingSpaceDTO(alreadyAllocatedParkingSpace);
         }
 
-        ParkingSpace parkingSpace = new ParkingSpace(vehicleReg, vehicleType, LocalDateTime.now());
+        ParkingSpace availableParkingSpace = parkingSpaceRepository.findNextAvailableParkingSpace();
+        availableParkingSpace.setVehicleReg(vehicleReg);
+        availableParkingSpace.setVehicleType(vehicleType);
+        availableParkingSpace.setTimeIn(LocalDateTime.now());
+        ParkingSpace allocatedParkingSpace = parkingSpaceRepository.save(availableParkingSpace);
 
-        HttpSession session = request.getSession();
-        session.setAttribute("availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()) - 1);
-        session.setAttribute("occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString()) + 1);
+        updateParkingSpaceInventory(true);
 
-        ParkingSpace savedParkingSpace = parkingSpaceRepository.save(parkingSpace);
-
-        return mapToOccupiedParkingSpaceDTO(savedParkingSpace);
+        return mapToOccupiedParkingSpaceDTO(allocatedParkingSpace);
     }
 
-    public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg, HttpServletRequest request) {
-        ParkingSpace parkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
+    public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
+        ParkingSpace allocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
 
-        Integer vehicleType = parkingSpace.getVehicleType();
-        LocalDateTime timeIn = parkingSpace.getTimeIn();
+        Integer vehicleType = allocatedParkingSpace.getVehicleType();
+        LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
 
-        parkingSpaceRepository.delete(parkingSpace);
+        allocatedParkingSpace.setVehicleReg(null);
+        allocatedParkingSpace.setVehicleType(null);
+        allocatedParkingSpace.setTimeIn(null);
+        parkingSpaceRepository.save(allocatedParkingSpace);
 
-        HttpSession session = request.getSession();
-        session.setAttribute("availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()) + 1);
-        session.setAttribute("occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString()) - 1);
+        updateParkingSpaceInventory(false);
 
         LocalDateTime timeOut = LocalDateTime.now();
         Duration diff = Duration.between(timeIn, timeOut);
