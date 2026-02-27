@@ -54,6 +54,19 @@ public class ParkingService {
         );
     }
 
+    private void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
+        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
+
+        parkingSpacesInventory.setAvailableSpaces(
+                Integer.parseInt(parkingSpacesInventory.getAvailableSpaces().toString()) + (allocatedParkingSpace ? -1 : 1)
+        );
+        parkingSpacesInventory.setOccupiedSpaces(
+                Integer.parseInt(parkingSpacesInventory.getOccupiedSpaces().toString()) + (allocatedParkingSpace ? 1 : -1)
+        );
+
+        parkingSpaceInventoryRepository.save(parkingSpacesInventory);
+    }
+
     private Double getMinuteRate(Integer vehicleType) {
         if (vehicleType == 1) {
             return .1;
@@ -70,19 +83,6 @@ public class ParkingService {
         ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
         return mapToParkingSpacesInventoryDTO(parkingSpacesInventory);
-    }
-
-    private void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
-        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
-
-        parkingSpacesInventory.setAvailableSpaces(
-                Integer.parseInt(parkingSpacesInventory.getAvailableSpaces().toString()) + (allocatedParkingSpace ? -1 : 1)
-        );
-        parkingSpacesInventory.setOccupiedSpaces(
-                Integer.parseInt(parkingSpacesInventory.getOccupiedSpaces().toString()) + (allocatedParkingSpace ? 1 : -1)
-        );
-
-        parkingSpaceInventoryRepository.save(parkingSpacesInventory);
     }
 
     public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
@@ -105,7 +105,6 @@ public class ParkingService {
 
     public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
         ParkingSpace allocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
-
         Integer vehicleType = allocatedParkingSpace.getVehicleType();
         LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
 
@@ -122,13 +121,12 @@ public class ParkingService {
         long minutesStayed = diff.toMinutes();
         double surcharge = Math.floor(minutesStayed / 5.0);
         double minuteRate = getMinuteRate(vehicleType);
-        BigDecimal bigDec = BigDecimal.valueOf((minutesStayed * minuteRate) + surcharge);
-        bigDec = bigDec.setScale(2, RoundingMode.HALF_UP);
-        double vehicleCharge = bigDec.doubleValue();
+        BigDecimal vehicleCharge = BigDecimal.valueOf(
+                (minutesStayed * minuteRate) + surcharge
+        ).setScale(2, RoundingMode.HALF_UP);
 
-        ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge, timeIn, timeOut);
-        ParkingBill savedParkingBill = parkingBillRepository.save(parkingBill);
-
-        return mapToParkingBillDTO(savedParkingBill);
+        return mapToParkingBillDTO(parkingBillRepository.save(
+            new ParkingBill(vehicleReg, vehicleCharge.doubleValue(), timeIn, timeOut)
+        ));
     }
 }
