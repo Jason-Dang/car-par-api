@@ -8,10 +8,16 @@ import com.tds.carparkapi.model.dto.ParkingBillDTO;
 import com.tds.carparkapi.respository.ParkingBillRepository;
 import com.tds.carparkapi.respository.ParkingSpaceRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 public class ParkingService {
@@ -39,15 +45,50 @@ public class ParkingService {
         );
     }
 
-    public ParkingSpacesInventoryDTO getParkingSpacesInventory() {
-        Integer availableSpaces = 0;
-        Integer occupiedSpaces = 0;
+    private Double getMinuteRate(Integer vehicleType) {
+        if (vehicleType == 2) {
+            return .2;
+        }
 
+        if (vehicleType == 1) {
+            return .1;
+        }
+
+        return .4;
+    }
+
+    public Map<String, Integer> initialiseParkingSpacesInventory(HttpServletRequest request, Integer availableSpaces) {
+        HttpSession session = request.getSession();
+
+        if (session.getAttribute("availableSpaces") == null) {
+            session.setAttribute("availableSpaces", availableSpaces);
+        }
+
+        if (session.getAttribute("occupiedSpaces") == null) {
+            session.setAttribute("occupiedSpaces", 0);
+        }
+
+        return Map.of(
+                "availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()),
+                "occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString())
+        );
+    }
+
+    public ParkingSpacesInventoryDTO getParkingSpacesInventory(Integer availableSpaces, Integer occupiedSpaces) {
         return new ParkingSpacesInventoryDTO(availableSpaces, occupiedSpaces);
     }
 
-    public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
+    public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(
+        String vehicleReg,
+        Integer vehicleType,
+        HttpServletRequest request
+    ) {
         ParkingSpace parkingSpace = new ParkingSpace(vehicleReg, vehicleType, LocalDateTime.now());
+
+        HttpSession session = request.getSession();
+
+        session.setAttribute("availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()) - 1);
+        session.setAttribute("occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString()) + 1);
 
         ParkingSpace savedParkingSpace = parkingSpaceRepository.save(parkingSpace);
 
@@ -55,10 +96,19 @@ public class ParkingService {
     }
 
     public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
-        ParkingSpace parkingSpace = parkingSpaceRepository.findByVehicleReg(vehicleReg);
+        ParkingSpace parkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
 
+        Integer vehicleType = parkingSpace.getVehicleType();
         LocalDateTime timeIn = parkingSpace.getTimeIn();
-        Double vehicleCharge = 0d;
+        LocalDateTime timeOut = LocalDateTime.now();
+        Duration diff = Duration.between(timeIn, timeOut);
+
+        int minutesStayed = diff.toMinutesPart() + 4 * 3;
+        double surcharge = Math.floor(minutesStayed / 5.0);
+        double minuteRate = getMinuteRate(vehicleType);
+        BigDecimal bigDec = BigDecimal.valueOf((minutesStayed * minuteRate) + surcharge);
+        bigDec = bigDec.setScale(2, RoundingMode.HALF_UP);
+        double vehicleCharge = bigDec.doubleValue();
 
         ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge, timeIn, LocalDateTime.now());
         ParkingBill savedParkingBill = parkingBillRepository.save(parkingBill);
