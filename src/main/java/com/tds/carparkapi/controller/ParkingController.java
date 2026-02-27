@@ -4,7 +4,6 @@ import com.tds.carparkapi.model.dto.ParkingSpacesInventoryDTO;
 import com.tds.carparkapi.service.ParkingService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,9 +23,7 @@ public class ParkingController
 
     @GetMapping("/api/parking")
     public ResponseEntity<ParkingSpacesInventoryDTO> getParkingSpacesInventory(
-            @Value("${app.config.totalSpaces}") Integer totalSpaces,
-            @SessionAttribute(name = "availableSpaces", required = false) Integer availableSpaces,
-            @SessionAttribute(name = "occupiedSpaces", required = false) Integer occupiedSpaces
+            @Value("${app.config.totalSpaces}") Integer totalSpaces
     ) {
         Map<String, Integer> sessionValues = parkingService.initialiseParkingSpacesInventory(request, totalSpaces);
         return ResponseEntity.ok(parkingService.getParkingSpacesInventory(
@@ -37,11 +34,9 @@ public class ParkingController
     @PostMapping("/api/parking")
     public ResponseEntity<Object> getNextAvailableParkingSpace(
             @Value("${app.config.totalSpaces}") Integer totalSpaces,
-            @SessionAttribute(name = "availableSpaces", required = false) Integer availableSpaces,
-            @SessionAttribute(name = "occupiedSpaces", required = false) Integer occupiedSpaces,
             @RequestBody Map<String, Object> requestData
     ) {
-        Map<String, Integer> sessionValues = parkingService.initialiseParkingSpacesInventory(request, totalSpaces);
+        parkingService.initialiseParkingSpacesInventory(request, totalSpaces);
 
         String vehicleReg = requestData.get("vehicleReg").toString();
         Integer vehicleType = Integer.parseInt(requestData.get("vehicleType").toString());
@@ -55,18 +50,23 @@ public class ParkingController
         }
 
         return ResponseEntity.ok(parkingService.getNextAvailableParkingSpace(
-            vehicleReg, vehicleType, request)
-        );
+            vehicleReg, vehicleType, request
+        ));
     }
 
     @PostMapping("/api/parking/bill")
-    public ResponseEntity<Object> getBillForVehicleReg(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<Object> getBillForVehicleReg(
+            @Value("${app.config.totalSpaces}") Integer totalSpaces,
+            @RequestBody Map<String, Object> requestData
+    ) {
+        parkingService.initialiseParkingSpacesInventory(request, totalSpaces);
+
         String vehicleReg = requestData.get("vehicleReg").toString();
 
         if (!requestData.containsKey("vehicleReg")) {
             return ResponseEntity.badRequest().body("Must provide vehicleReg");
         }
 
-        return ResponseEntity.ok(parkingService.getParkingBillForVehicleReg(vehicleReg));
+        return ResponseEntity.ok(parkingService.getParkingBillForVehicleReg(vehicleReg, request));
     }
 }

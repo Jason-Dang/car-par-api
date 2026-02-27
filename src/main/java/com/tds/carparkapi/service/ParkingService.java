@@ -46,12 +46,12 @@ public class ParkingService {
     }
 
     private Double getMinuteRate(Integer vehicleType) {
-        if (vehicleType == 2) {
-            return .2;
-        }
-
         if (vehicleType == 1) {
             return .1;
+        }
+
+        if (vehicleType == 2) {
+            return .2;
         }
 
         return .4;
@@ -83,10 +83,15 @@ public class ParkingService {
         Integer vehicleType,
         HttpServletRequest request
     ) {
+        ParkingSpace existingParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
+
+        if (existingParkingSpace != null) {
+            return mapToOccupiedParkingSpaceDTO(existingParkingSpace);
+        }
+
         ParkingSpace parkingSpace = new ParkingSpace(vehicleReg, vehicleType, LocalDateTime.now());
 
         HttpSession session = request.getSession();
-
         session.setAttribute("availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()) - 1);
         session.setAttribute("occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString()) + 1);
 
@@ -95,22 +100,29 @@ public class ParkingService {
         return mapToOccupiedParkingSpaceDTO(savedParkingSpace);
     }
 
-    public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
+    public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg, HttpServletRequest request) {
         ParkingSpace parkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
 
         Integer vehicleType = parkingSpace.getVehicleType();
         LocalDateTime timeIn = parkingSpace.getTimeIn();
+
+        parkingSpaceRepository.delete(parkingSpace);
+
+        HttpSession session = request.getSession();
+        session.setAttribute("availableSpaces", Integer.parseInt(session.getAttribute("availableSpaces").toString()) + 1);
+        session.setAttribute("occupiedSpaces", Integer.parseInt(session.getAttribute("occupiedSpaces").toString()) - 1);
+
         LocalDateTime timeOut = LocalDateTime.now();
         Duration diff = Duration.between(timeIn, timeOut);
 
-        int minutesStayed = diff.toMinutesPart() + 4 * 3;
+        long minutesStayed = diff.toMinutes();
         double surcharge = Math.floor(minutesStayed / 5.0);
         double minuteRate = getMinuteRate(vehicleType);
         BigDecimal bigDec = BigDecimal.valueOf((minutesStayed * minuteRate) + surcharge);
         bigDec = bigDec.setScale(2, RoundingMode.HALF_UP);
         double vehicleCharge = bigDec.doubleValue();
 
-        ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge, timeIn, LocalDateTime.now());
+        ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge, timeIn, timeOut);
         ParkingBill savedParkingBill = parkingBillRepository.save(parkingBill);
 
         return mapToParkingBillDTO(savedParkingBill);
