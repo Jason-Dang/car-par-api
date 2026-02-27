@@ -28,24 +28,12 @@ public class ParkingController
             return ResponseEntity.badRequest().body("Vehicle registration must be provided");
         }
 
-        if (requestData.get("vehicleReg") == null) {
-            return ResponseEntity.badRequest().body("Vehicle registration cannot be null");
-        }
-
-        String vehicleReg = requestData.get("vehicleReg").toString();
-
-        if (vehicleReg.isEmpty()) {
-            return ResponseEntity.badRequest().body("Vehicle registration cannot be empty");
-        }
-
-        ParkingSpace alreadyAllocatedParkingSpace = parkingService.getAllocatedParkingSpaceForVehicleReg(vehicleReg);
-
-        if (alreadyAllocatedParkingSpace != null) {
-            return ResponseEntity.badRequest().body("Vehicle registration already parked in space");
-        }
-
         if (!requestData.containsKey("vehicleType")) {
             return ResponseEntity.badRequest().body("Vehicle type must be provided");
+        }
+
+        if (requestData.get("vehicleReg") == null) {
+            return ResponseEntity.badRequest().body("Vehicle registration cannot be null");
         }
 
         if (requestData.get("vehicleType") == null) {
@@ -53,6 +41,15 @@ public class ParkingController
         }
 
         Integer vehicleType = Integer.parseInt(requestData.get("vehicleType").toString());
+        String vehicleReg = requestData.get("vehicleReg").toString();
+
+        if (vehicleReg.isEmpty()) {
+            return ResponseEntity.badRequest().body("Vehicle registration cannot be empty");
+        }
+
+        if (parkingService.getAllocatedParkingSpaceForVehicleReg(vehicleReg) != null) {
+            return ResponseEntity.badRequest().body("Vehicle registration already parked in space");
+        }
 
         return ResponseEntity.ok(parkingService.getNextAvailableParkingSpace(vehicleReg, vehicleType));
     }
