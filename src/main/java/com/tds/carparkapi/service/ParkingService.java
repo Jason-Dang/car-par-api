@@ -82,17 +82,15 @@ public class ParkingService {
         return .4;
     }
 
+    public ParkingSpace getAllocatedParkingSpaceForVehicleReg(String vehicleReg) {
+        return parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
+    }
+
     public ParkingSpacesInventoryDTO getParkingSpacesInventory() {
         return mapToParkingSpacesInventoryDTO(parkingSpaceInventoryRepository.findOneById(1L));
     }
 
     public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
-        ParkingSpace alreadyAllocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
-
-        if (alreadyAllocatedParkingSpace != null) {
-            return mapToOccupiedParkingSpaceDTO(alreadyAllocatedParkingSpace);
-        }
-
         ParkingSpace availableParkingSpace = parkingSpaceRepository.findNextAvailableParkingSpace();
         availableParkingSpace.setVehicleReg(vehicleReg);
         availableParkingSpace.setVehicleType(vehicleType);
@@ -104,9 +102,10 @@ public class ParkingService {
         return mapToOccupiedParkingSpaceDTO(allocatedParkingSpace);
     }
 
-    public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
+    public ParkingBillDTO getParkingBillForVehicleReg(ParkingSpace allocatedParkingSpace) {
         LocalDateTime timeOut = LocalDateTime.now();
-        ParkingSpace allocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
+
+        String vehicleReg = allocatedParkingSpace.getVehicleReg();
         Integer vehicleType = allocatedParkingSpace.getVehicleType();
         LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
 
