@@ -18,24 +18,4 @@ public class ParkingBillDTO {
         this.timeIn = timeIn;
         this.timeOut = timeOut;
     }
-
-    public Long getBillId() {
-        return this.billId;
-    }
-
-    public String getVehicleReg() {
-        return this.vehicleReg;
-    }
-
-    public Double getVehicleCharge() {
-        return this.vehicleCharge;
-    }
-
-    public LocalDateTime getTimeIn() {
-        return this.timeIn;
-    }
-
-    public LocalDateTime getTimeOut() {
-        return this.timeOut;
-    }
 }

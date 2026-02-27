@@ -14,16 +14,4 @@ public class OccupiedParkingSpaceDTO {
         this.vehicleReg = vehicleReg;
         this.timeIn = timeIn;
     }
-
-    public Long getSpaceNumber() {
-        return this.spaceNumber;
-    }
-
-    public String getVehicleReg() {
-        return this.vehicleReg;
-    }
-
-    public LocalDateTime getTimeIn() {
-        return this.timeIn;
-    }
 }

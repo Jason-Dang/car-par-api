@@ -58,10 +58,13 @@ public class ParkingService {
         ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
         parkingSpacesInventory.setAvailableSpaces(
-                Integer.parseInt(parkingSpacesInventory.getAvailableSpaces().toString()) + (allocatedParkingSpace ? -1 : 1)
+                parkingSpacesInventory.getAvailableSpaces()
+                + (allocatedParkingSpace ? -1 : 1)
         );
+
         parkingSpacesInventory.setOccupiedSpaces(
-                Integer.parseInt(parkingSpacesInventory.getOccupiedSpaces().toString()) + (allocatedParkingSpace ? 1 : -1)
+                parkingSpacesInventory.getOccupiedSpaces()
+                + (allocatedParkingSpace ? 1 : -1)
         );
 
         parkingSpaceInventoryRepository.save(parkingSpacesInventory);
@@ -80,9 +83,7 @@ public class ParkingService {
     }
 
     public ParkingSpacesInventoryDTO getParkingSpacesInventory() {
-        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
-
-        return mapToParkingSpacesInventoryDTO(parkingSpacesInventory);
+        return mapToParkingSpacesInventoryDTO(parkingSpaceInventoryRepository.findOneById(1L));
     }
 
     public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
@@ -104,6 +105,7 @@ public class ParkingService {
     }
 
     public ParkingBillDTO getParkingBillForVehicleReg(String vehicleReg) {
+        LocalDateTime timeOut = LocalDateTime.now();
         ParkingSpace allocatedParkingSpace = parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
         Integer vehicleType = allocatedParkingSpace.getVehicleType();
         LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
@@ -115,9 +117,7 @@ public class ParkingService {
 
         updateParkingSpaceInventory(false);
 
-        LocalDateTime timeOut = LocalDateTime.now();
         Duration diff = Duration.between(timeIn, timeOut);
-
         long minutesStayed = diff.toMinutes();
         double surcharge = Math.floor(minutesStayed / 5.0);
         double minuteRate = getMinuteRate(vehicleType);

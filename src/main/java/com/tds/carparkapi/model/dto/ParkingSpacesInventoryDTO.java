@@ -10,12 +10,4 @@ public class ParkingSpacesInventoryDTO {
         this.availableSpaces = availableSpaces;
         this.occupiedSpaces = occupiedSpaces;
     }
-
-    public Integer getAvailableSpaces() {
-        return this.availableSpaces;
-    }
-
-    public Integer getOccupiedSpaces() {
-        return this.occupiedSpaces;
-    }
 }

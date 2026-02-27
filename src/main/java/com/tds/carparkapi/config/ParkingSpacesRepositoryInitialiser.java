@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 
 @Configuration
-public class ParkingSpacesRepositoryConfig {
+public class ParkingSpacesRepositoryInitialiser {
     @Value("${app.config.totalSpaces}")
     private Integer totalSpaces;
 
