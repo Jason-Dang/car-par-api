@@ -8,10 +8,10 @@
 
 ## Requirements:
 - Your API should be able to handle the following scenarios:
-- Allocating vehicles to the first available space
+- Allocating vehicles to the first available parkingSpace
 - Determine the number of available and full spaces
 - Determine the parking charge on vehicle exit
-- De-Allocate a space on vehicle exit
+- De-Allocate a parkingSpace on vehicle exit
 - Vehicles will be charged per minute they are parked
 - The parking charges are:
     - Small Car - £0.10/minute (1)
@@ -42,7 +42,7 @@
 
 #### 2. `POST /parking`
 
-- Description: Parks a given vehicle in the first available space and returns the vehicle and its space number
+- Description: Parks a given vehicle in the first available parkingSpace and returns the vehicle and its parkingSpace number
 - Query Params: None
 - Request Body:
 ```json
@@ -60,9 +60,9 @@
 }
 ```
 
-#### 3. `POST /parking/bill`
+#### 3. `POST /parking/parkingBill`
 
-- Description: Frees up this vehicles space and return its final charge from its parking time until now 
+- Description: Frees up this vehicles parkingSpace and return its final charge from its parking time until now 
 - Query Params: None
 - Request Body:
 ```json
