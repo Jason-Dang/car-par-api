@@ -29,6 +29,16 @@ public class ParkingService {
     @Autowired
     private ParkingSpaceInventoryRepository parkingSpaceInventoryRepository;
 
+    public ParkingService(
+        ParkingBillRepository parkingBillRepository,
+        ParkingSpaceRepository parkingSpaceRepository,
+        ParkingSpaceInventoryRepository parkingSpaceInventoryRepository
+    ) {
+        this.parkingBillRepository = parkingBillRepository;
+        this.parkingSpaceRepository = parkingSpaceRepository;
+        this.parkingSpaceInventoryRepository = parkingSpaceInventoryRepository;
+    }
+
     private ParkingBillDTO mapToParkingBillDTO(ParkingBill parkingBill) {
         return new ParkingBillDTO(
             parkingBill.getId(),

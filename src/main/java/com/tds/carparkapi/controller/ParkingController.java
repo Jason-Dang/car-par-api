@@ -17,6 +17,10 @@ public class ParkingController
     @Autowired
     private ParkingService parkingService;
 
+    public ParkingController(ParkingService parkingService) {
+        this.parkingService = parkingService;
+    }
+
     @GetMapping("/api/parking")
     public ResponseEntity<ParkingSpaceInventoryDTO> getParkingSpaceInventory() {
         return ResponseEntity.ok(parkingService.getParkingSpaceInventory());
