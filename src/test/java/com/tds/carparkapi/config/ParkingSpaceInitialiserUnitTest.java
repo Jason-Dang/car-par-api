@@ -6,6 +6,7 @@ import com.tds.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.tds.carparkapi.respository.ParkingSpaceRepository;
 import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ public class ParkingSpaceInitialiserUnitTest {
     private ParkingSpaceRepositoryInitialiser parkingSpaceRepositoryInitialiser;
 
     @BeforeEach
-    public void init() {
+    public void setup() {
         MockitoAnnotations.openMocks(this);
 
         parkingSpaceRepositoryInitialiser = new ParkingSpaceRepositoryInitialiser(
@@ -49,7 +50,7 @@ public class ParkingSpaceInitialiserUnitTest {
     }
 
     @Test
-    void testSaveParkingSpaceInventory() {
+    void initialisedParkingSpaceInventoryWithTotalSpaces() {
         parkingSpaceRepositoryInitialiser.initialiseParkingSpaceInventory();
 
         ArgumentCaptor<ParkingSpaceInventory> parkingSpaceInventoryCaptor = ArgumentCaptor.forClass(ParkingSpaceInventory.class);
@@ -59,14 +60,13 @@ public class ParkingSpaceInitialiserUnitTest {
     }
 
     @Test
-    void testSaveParkingSpaces() {
+    void initialisedAvailableParkingSpacesWithTotalSpaces() {
         parkingSpaceRepositoryInitialiser.initialiseAvailableParkingSpaces();
 
         ArgumentCaptor<ParkingSpace> parkingSpaceCaptor = ArgumentCaptor.forClass(ParkingSpace.class);
         verify(parkingSpaceRepository, times(totalSpaces)).save(parkingSpaceCaptor.capture());
 
         List<ParkingSpace> captives = parkingSpaceCaptor.getAllValues();
-        Assertions.assertThat(captives).isNotEmpty();
         Assertions.assertThat(captives.size() == totalSpaces);
 
         ParkingSpace firstSpace = captives.getFirst();

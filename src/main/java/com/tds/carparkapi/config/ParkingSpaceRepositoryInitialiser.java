@@ -11,9 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 public class ParkingSpaceRepositoryInitialiser {
     private final Integer totalSpaces;
@@ -33,19 +30,27 @@ public class ParkingSpaceRepositoryInitialiser {
 
     @Bean
     @EventListener(ApplicationReadyEvent.class)
-    public ParkingSpaceInventory initialiseParkingSpaceInventory() {
-        return parkingSpaceInventoryRepository.save(new ParkingSpaceInventory(totalSpaces, 0));
+    public boolean initialiseParkingSpaceInventory() {
+        if (totalSpaces <= 0) {
+            return false;
+        }
+
+        parkingSpaceInventoryRepository.save(new ParkingSpaceInventory(totalSpaces, 0));
+
+        return true;
     }
 
     @Bean
     @EventListener(ApplicationReadyEvent.class)
-    public List<ParkingSpace> initialiseAvailableParkingSpaces() {
-        List<ParkingSpace> parkingSpaceList = new ArrayList<>();
-
-        for (int i = 0; i < totalSpaces; i++) {
-            parkingSpaceList.add(parkingSpaceRepository.save(new ParkingSpace()));
+    public boolean initialiseAvailableParkingSpaces() {
+        if (totalSpaces <= 0) {
+            return false;
         }
 
-        return parkingSpaceList;
+        for (int i = 0; i < totalSpaces; i++) {
+            parkingSpaceRepository.save(new ParkingSpace());
+        }
+
+        return true;
     }
 }
