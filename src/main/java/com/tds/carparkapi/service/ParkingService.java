@@ -1,11 +1,11 @@
 package com.tds.carparkapi.service;
 
 import com.tds.carparkapi.model.dto.OccupiedParkingSpaceDTO;
-import com.tds.carparkapi.model.dto.ParkingSpacesInventoryDTO;
+import com.tds.carparkapi.model.dto.ParkingSpaceInventoryDTO;
 import com.tds.carparkapi.model.entity.ParkingBill;
 import com.tds.carparkapi.model.entity.ParkingSpace;
 import com.tds.carparkapi.model.dto.ParkingBillDTO;
-import com.tds.carparkapi.model.entity.ParkingSpacesInventory;
+import com.tds.carparkapi.model.entity.ParkingSpaceInventory;
 import com.tds.carparkapi.respository.ParkingBillRepository;
 import com.tds.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.tds.carparkapi.respository.ParkingSpaceRepository;
@@ -47,27 +47,27 @@ public class ParkingService {
         );
     }
 
-    private ParkingSpacesInventoryDTO mapToParkingSpacesInventoryDTO(ParkingSpacesInventory parkingSpacesInventory) {
-        return new ParkingSpacesInventoryDTO(
-                parkingSpacesInventory.getAvailableSpaces(),
-                parkingSpacesInventory.getOccupiedSpaces()
+    private ParkingSpaceInventoryDTO mapToParkingSpaceInventoryDTO(ParkingSpaceInventory parkingSpaceInventory) {
+        return new ParkingSpaceInventoryDTO(
+                parkingSpaceInventory.getAvailableSpaces(),
+                parkingSpaceInventory.getOccupiedSpaces()
         );
     }
 
     private void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
-        ParkingSpacesInventory parkingSpacesInventory = parkingSpaceInventoryRepository.findOneById(1L);
+        ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
-        parkingSpacesInventory.setAvailableSpaces(
-                parkingSpacesInventory.getAvailableSpaces()
+        parkingSpaceInventory.setAvailableSpaces(
+                parkingSpaceInventory.getAvailableSpaces()
                 + (allocatedParkingSpace ? -1 : 1)
         );
 
-        parkingSpacesInventory.setOccupiedSpaces(
-                parkingSpacesInventory.getOccupiedSpaces()
+        parkingSpaceInventory.setOccupiedSpaces(
+                parkingSpaceInventory.getOccupiedSpaces()
                 + (allocatedParkingSpace ? 1 : -1)
         );
 
-        parkingSpaceInventoryRepository.save(parkingSpacesInventory);
+        parkingSpaceInventoryRepository.save(parkingSpaceInventory);
     }
 
     private Double getMinuteRate(Integer vehicleType) {
@@ -86,8 +86,8 @@ public class ParkingService {
         return parkingSpaceRepository.findOneByVehicleReg(vehicleReg);
     }
 
-    public ParkingSpacesInventoryDTO getParkingSpacesInventory() {
-        return mapToParkingSpacesInventoryDTO(parkingSpaceInventoryRepository.findOneById(1L));
+    public ParkingSpaceInventoryDTO getParkingSpaceInventory() {
+        return mapToParkingSpaceInventoryDTO(parkingSpaceInventoryRepository.findOneById(1L));
     }
 
     public OccupiedParkingSpaceDTO getNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {

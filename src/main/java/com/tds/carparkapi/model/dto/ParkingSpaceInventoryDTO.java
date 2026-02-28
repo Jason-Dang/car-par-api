@@ -1,12 +1,12 @@
 package com.tds.carparkapi.model.dto;
 
-public class ParkingSpacesInventoryDTO {
+public class ParkingSpaceInventoryDTO {
     private Integer availableSpaces;
     private Integer occupiedSpaces;
 
-    public ParkingSpacesInventoryDTO() {}
+    public ParkingSpaceInventoryDTO() {}
 
-    public ParkingSpacesInventoryDTO(Integer availableSpaces, Integer occupiedSpaces) {
+    public ParkingSpaceInventoryDTO(Integer availableSpaces, Integer occupiedSpaces) {
         this.availableSpaces = availableSpaces;
         this.occupiedSpaces = occupiedSpaces;
     }

@@ -1,6 +1,6 @@
 package com.tds.carparkapi.controller;
 
-import com.tds.carparkapi.model.dto.ParkingSpacesInventoryDTO;
+import com.tds.carparkapi.model.dto.ParkingSpaceInventoryDTO;
 import com.tds.carparkapi.model.entity.ParkingSpace;
 import com.tds.carparkapi.service.ParkingService;
 
@@ -18,8 +18,8 @@ public class ParkingController
     private ParkingService parkingService;
 
     @GetMapping("/api/parking")
-    public ResponseEntity<ParkingSpacesInventoryDTO> getParkingSpacesInventory() {
-        return ResponseEntity.ok(parkingService.getParkingSpacesInventory());
+    public ResponseEntity<ParkingSpaceInventoryDTO> getParkingSpaceInventory() {
+        return ResponseEntity.ok(parkingService.getParkingSpaceInventory());
     }
 
     @PostMapping("/api/parking")

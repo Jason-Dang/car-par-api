@@ -3,7 +3,7 @@ package com.tds.carparkapi.model.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class ParkingSpacesInventory {
+public class ParkingSpaceInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,9 +14,9 @@ public class ParkingSpacesInventory {
     @Column(name="occupiedSpaces")
     private Integer occupiedSpaces;
 
-    protected ParkingSpacesInventory() {}
+    protected ParkingSpaceInventory() {}
 
-    public ParkingSpacesInventory(Integer availableSpaces, Integer occupiedSpaces) {
+    public ParkingSpaceInventory(Integer availableSpaces, Integer occupiedSpaces) {
         this.availableSpaces = availableSpaces;
         this.occupiedSpaces = occupiedSpaces;
     }
