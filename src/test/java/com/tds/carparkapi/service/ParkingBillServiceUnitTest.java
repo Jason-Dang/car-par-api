@@ -1,7 +1,6 @@
-package com.tds.carparkapi.controller;
+package com.tds.carparkapi.service;
 
-
-import com.tds.carparkapi.service.ParkingSpaceService;
+import com.tds.carparkapi.respository.ParkingBillRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -12,23 +11,23 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ParkingControllerUnitTest
-{
+public class ParkingBillServiceUnitTest {
+
     @Mock
-    private ParkingSpaceService parkingSpaceService;
+    private ParkingBillRepository parkingBillRepository;
 
     @InjectMocks
-    private ParkingController parkingController;
+    private ParkingBillService parkingBillService;
 
     @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
 
-        parkingController = new ParkingController(parkingSpaceService);
+        parkingBillService = new ParkingBillService(parkingBillRepository);
     }
 
     @AfterEach
     public void reset() {
-        Mockito.reset(parkingSpaceService);
+        Mockito.reset(parkingBillRepository);
     }
 }

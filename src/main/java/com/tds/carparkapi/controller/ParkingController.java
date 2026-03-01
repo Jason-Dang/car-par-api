@@ -2,28 +2,33 @@ package com.tds.carparkapi.controller;
 
 import com.tds.carparkapi.model.dto.ParkingSpaceInventoryDTO;
 import com.tds.carparkapi.model.entity.ParkingSpace;
-import com.tds.carparkapi.service.ParkingService;
+import com.tds.carparkapi.service.ParkingBillService;
+import com.tds.carparkapi.service.ParkingSpaceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
 public class ParkingController
 {
     @Autowired
-    private ParkingService parkingService;
+    private ParkingSpaceService parkingSpaceService;
 
-    public ParkingController(ParkingService parkingService) {
-        this.parkingService = parkingService;
+    @Autowired
+    private ParkingBillService parkingBillService;
+
+    public ParkingController(ParkingSpaceService parkingSpaceService) {
+        this.parkingSpaceService = parkingSpaceService;
     }
 
     @GetMapping("/api/parking")
     public ResponseEntity<ParkingSpaceInventoryDTO> getParkingSpaceInventory() {
-        return ResponseEntity.ok(parkingService.getParkingSpaceInventory());
+        return ResponseEntity.ok(parkingSpaceService.getParkingSpaceInventory());
     }
 
     @PostMapping("/api/parking")
@@ -51,15 +56,15 @@ public class ParkingController
             return ResponseEntity.badRequest().body("Vehicle registration cannot be empty");
         }
 
-        if (parkingService.getAllocatedParkingSpaceForVehicleReg(vehicleReg) != null) {
+        if (parkingSpaceService.getAllocatedParkingSpace(vehicleReg) != null) {
             return ResponseEntity.badRequest().body("Vehicle registration already parked in space");
         }
 
-        return ResponseEntity.ok(parkingService.getNextAvailableParkingSpace(vehicleReg, vehicleType));
+        return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType));
     }
 
     @PostMapping("/api/parking/bill")
-    public ResponseEntity<Object> getBillForVehicleReg(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<Object> getParkingBill(@RequestBody Map<String, Object> requestData) {
         if (!requestData.containsKey("vehicleReg")) {
             return ResponseEntity.badRequest().body("Vehicle registration must be provided");
         }
@@ -74,12 +79,23 @@ public class ParkingController
             return ResponseEntity.badRequest().body("Vehicle registration cannot be empty");
         }
 
-        ParkingSpace allocatedParkingSpace = parkingService.getAllocatedParkingSpaceForVehicleReg(vehicleReg);
+        ParkingSpace allocatedParkingSpace = parkingSpaceService.getAllocatedParkingSpace(vehicleReg);
 
         if (allocatedParkingSpace == null) {
             return ResponseEntity.badRequest().body("Vehicle registration not found in any parking spaces");
         }
 
-        return ResponseEntity.ok(parkingService.getParkingBillForVehicleReg(allocatedParkingSpace));
+        LocalDateTime timeOut = LocalDateTime.now();
+        Integer vehicleType = allocatedParkingSpace.getVehicleType();
+        LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
+
+        parkingSpaceService.deallocateParkingSpaceForReg(allocatedParkingSpace);
+
+        return ResponseEntity.ok(parkingBillService.getParkingBill(
+            timeOut,
+            vehicleReg,
+            vehicleType,
+            timeIn
+        ));
     }
 }
