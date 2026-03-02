@@ -51,7 +51,8 @@ Simple car park management API with in-memory storage
 
 
 ### Improvement Notes
-- Auth
+- Auth (Oauth / API Key / JWT / Spring Security)
+- User Input Sanitising (code/sql injection prevention)
 - Rate Limiting
 - Improved error handling
 - Improved test coverage/quality/efficiency
