@@ -5,7 +5,7 @@ import com.tds.carparkapi.Entity.ParkingSpaceInventory;
 import com.tds.carparkapi.Respository.ParkingSpaceInventoryRepository;
 import com.tds.carparkapi.Respository.ParkingSpaceRepository;
 import jakarta.inject.Inject;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParkingSpaceInitialiserUnitTest {
@@ -54,8 +56,8 @@ public class ParkingSpaceInitialiserUnitTest {
 
         ArgumentCaptor<ParkingSpaceInventory> parkingSpaceInventoryCaptor = ArgumentCaptor.forClass(ParkingSpaceInventory.class);
         verify(parkingSpaceInventoryRepository, times(1)).save(parkingSpaceInventoryCaptor.capture());
-        Assertions.assertThat(parkingSpaceInventoryCaptor.getValue().getAvailableSpaces().equals(totalSpaces));
-        Assertions.assertThat(parkingSpaceInventoryCaptor.getValue().getOccupiedSpaces().equals(0));
+        Assertions.assertEquals(totalSpaces, parkingSpaceInventoryCaptor.getValue().getAvailableSpaces());
+        Assertions.assertEquals(0, parkingSpaceInventoryCaptor.getValue().getOccupiedSpaces());
     }
 
     @Test
@@ -66,12 +68,12 @@ public class ParkingSpaceInitialiserUnitTest {
         verify(parkingSpaceRepository, times(totalSpaces)).save(parkingSpaceCaptor.capture());
 
         List<ParkingSpace> captives = parkingSpaceCaptor.getAllValues();
-        Assertions.assertThat(captives.size() == totalSpaces);
+        Assertions.assertEquals(totalSpaces, captives.size());
 
         ParkingSpace firstSpace = captives.getFirst();
-        assert firstSpace != null;
+        Assertions.assertNotNull(firstSpace);
 
         ParkingSpace lastSpace = captives.getLast();
-        assert lastSpace != null;
+        Assertions.assertNotNull(lastSpace);
     }
 }

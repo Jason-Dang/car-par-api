@@ -1,5 +1,7 @@
 package com.tds.carparkapi.Controller;
 
+import com.tds.carparkapi.DTO.OccupiedParkingSpaceDTO;
+import com.tds.carparkapi.DTO.ParkingBillDTO;
 import com.tds.carparkapi.DTO.ParkingSpaceInventoryDTO;
 import com.tds.carparkapi.Entity.ParkingSpace;
 import com.tds.carparkapi.ExceptionHandling.CustomExceptions.InvalidDataException;
@@ -34,7 +36,7 @@ public class ParkingController
     }
 
     @PostMapping("/api/parking")
-    public ResponseEntity<Object> getNextAvailableParkingSpace(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<OccupiedParkingSpaceDTO> getNextAvailableParkingSpace(@RequestBody Map<String, Object> requestData) {
         if (!requestData.containsKey("vehicleReg")) {
             throw new InvalidDataException(
                 "Vehicle registration must be provided",
@@ -90,7 +92,7 @@ public class ParkingController
     }
 
     @PostMapping("/api/parking/bill")
-    public ResponseEntity<Object> getParkingBill(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<ParkingBillDTO> getParkingBill(@RequestBody Map<String, Object> requestData) {
         if (!requestData.containsKey("vehicleReg")) {
             throw new InvalidDataException(
                 "Vehicle registration must be provided",
@@ -134,10 +136,10 @@ public class ParkingController
         parkingSpaceService.deallocateParkingSpaceForReg(allocatedParkingSpace);
 
         return ResponseEntity.ok(parkingBillService.getParkingBill(
-            timeOut,
-            vehicleReg,
-            vehicleType,
-            timeIn
+                vehicleReg,
+                vehicleType,
+                timeIn,
+                timeOut
         ));
     }
 }

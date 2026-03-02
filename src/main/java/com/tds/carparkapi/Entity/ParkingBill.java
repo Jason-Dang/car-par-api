@@ -26,9 +26,28 @@ public class ParkingBill {
     @Column(name="timeOut", length=18, nullable=false)
     private LocalDateTime timeOut;
 
-    protected ParkingBill() {}
+    public ParkingBill() {}
 
-    public ParkingBill(String vehicleReg, Double vehicleCharge, LocalDateTime timeIn, LocalDateTime timeOut) {
+    public ParkingBill(
+        String vehicleReg,
+        Double vehicleCharge,
+        LocalDateTime timeIn,
+        LocalDateTime timeOut
+    ) {
+        this.vehicleReg = vehicleReg;
+        this.vehicleCharge = vehicleCharge;
+        this.timeIn = timeIn;
+        this.timeOut = timeOut;
+    }
+
+    public ParkingBill(
+        Long billId,
+        String vehicleReg,
+        Double vehicleCharge,
+        LocalDateTime timeIn,
+        LocalDateTime timeOut
+    ) {
+        this.id = billId;
         this.vehicleReg = vehicleReg;
         this.vehicleCharge = vehicleCharge;
         this.timeIn = timeIn;

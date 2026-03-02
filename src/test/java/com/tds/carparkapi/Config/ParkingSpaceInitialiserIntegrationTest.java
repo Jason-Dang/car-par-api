@@ -4,9 +4,12 @@ import com.tds.carparkapi.Entity.ParkingSpace;
 import com.tds.carparkapi.Entity.ParkingSpaceInventory;
 import com.tds.carparkapi.Respository.ParkingSpaceInventoryRepository;
 import com.tds.carparkapi.Respository.ParkingSpaceRepository;
+
 import jakarta.inject.Inject;
-import org.assertj.core.api.Assertions;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,13 +38,13 @@ public class ParkingSpaceInitialiserIntegrationTest {
         parkingSpaceRepositoryInitialiser.initialiseParkingSpaceInventory();
 
         ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
-        assert parkingSpaceInventory != null;
+        Assertions.assertNotNull(parkingSpaceInventory);
 
-        assert parkingSpaceInventory.getAvailableSpaces() != null;
-        Assertions.assertThat(parkingSpaceInventory.getAvailableSpaces().equals(totalSpaces));
+        Assertions.assertNotNull(parkingSpaceInventory.getAvailableSpaces());
+        Assertions.assertEquals(totalSpaces, parkingSpaceInventory.getAvailableSpaces());
 
-        assert parkingSpaceInventory.getOccupiedSpaces() != null;
-        Assertions.assertThat(parkingSpaceInventory.getOccupiedSpaces().equals(0));
+        Assertions.assertNotNull(parkingSpaceInventory.getOccupiedSpaces());
+        Assertions.assertEquals(0, parkingSpaceInventory.getOccupiedSpaces());
     }
 
     @Test
@@ -49,18 +52,18 @@ public class ParkingSpaceInitialiserIntegrationTest {
         parkingSpaceRepositoryInitialiser.initialiseAvailableParkingSpaces();
 
         List<ParkingSpace> parkingSpaceList = parkingSpaceRepository.findAll();
-        Assertions.assertThat(parkingSpaceList).isNotEmpty();
+        Assertions.assertFalse(parkingSpaceList.isEmpty());
 
         ParkingSpace firstSpace = parkingSpaceList.getFirst();
-        Assertions.assertThat(firstSpace.getId().equals(1L));
-        assert firstSpace.getVehicleReg() == null;
-        assert firstSpace.getVehicleType() == null;
-        assert firstSpace.getTimeIn() == null;
+        Assertions.assertEquals(1L, firstSpace.getId());
+        Assertions.assertNull(firstSpace.getVehicleReg());
+        Assertions.assertNull(firstSpace.getVehicleType());
+        Assertions.assertNull(firstSpace.getTimeIn());
 
         ParkingSpace lastSpace = parkingSpaceList.getLast();
-        Assertions.assertThat(lastSpace.getId().equals(Long.valueOf(totalSpaces)));
-        assert lastSpace.getVehicleReg() == null;
-        assert lastSpace.getVehicleType() == null;
-        assert lastSpace.getTimeIn() == null;
+        Assertions.assertEquals(Long.valueOf(totalSpaces), lastSpace.getId());
+        Assertions.assertNull(lastSpace.getVehicleReg());
+        Assertions.assertNull(lastSpace.getVehicleType());
+        Assertions.assertNull(lastSpace.getTimeIn());
     }
 }

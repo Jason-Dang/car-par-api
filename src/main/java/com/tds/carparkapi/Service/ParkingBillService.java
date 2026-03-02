@@ -50,10 +50,10 @@ public class ParkingBillService {
     }
 
     public ParkingBillDTO getParkingBill(
-        LocalDateTime timeOut,
         String vehicleReg,
         Integer vehicleType,
-        LocalDateTime timeIn
+        LocalDateTime timeIn,
+        LocalDateTime timeOut
     ) {
         Duration diff = Duration.between(timeIn, timeOut);
         BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
