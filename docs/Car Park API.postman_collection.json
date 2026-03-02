@@ -1,0 +1,83 @@
+{
+  "info": {
+    "_postman_id": "3d0deb9d-1322-446a-8559-a01545156abb",
+    "name": "Car Park API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "13255494"
+  },
+  "item": [
+    {
+      "name": "checkSpaces",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/parking",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "allocateSpace",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"vehicleReg\": \"D10 12Y26\",\n    \"vehicleType\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/parking",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parking"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "checkoutSpace",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicleReg\": \"D10 12Y26\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/parking/bill",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parking",
+            "bill"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
