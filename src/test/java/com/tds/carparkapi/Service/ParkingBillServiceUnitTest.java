@@ -128,4 +128,92 @@ public class ParkingBillServiceUnitTest {
 
         Assertions.assertEquals("Vehicle type must be either: '1', '2' or '3'", exception.getMessage());
     }
+
+    @Test
+    void get5MinuteParkingBillForVehicleType1() {
+        Integer vehicleType = 1;
+        String vehicleReg = "ABC 123";
+        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(5);
+
+        when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
+            invocation -> invocation.getArguments()[0]
+        );
+
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        );
+
+        Assertions.assertNotNull(parkingBillDTO);
+        Assertions.assertEquals(1.5, parkingBillDTO.getVehicleCharge());
+    }
+
+    @Test
+    void get10MinuteParkingBillForVehicleType1() {
+        Integer vehicleType = 1;
+        String vehicleReg = "ABC 123";
+        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(10);
+
+        when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
+            invocation -> invocation.getArguments()[0]
+        );
+
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        );
+
+        Assertions.assertNotNull(parkingBillDTO);
+        Assertions.assertEquals(3.0, parkingBillDTO.getVehicleCharge());
+    }
+
+    @Test
+    void get15MinuteParkingBillForVehicleType1() {
+        Integer vehicleType = 1;
+        String vehicleReg = "ABC 123";
+        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(15);
+
+        when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
+            invocation -> invocation.getArguments()[0]
+        );
+
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        );
+
+        Assertions.assertNotNull(parkingBillDTO);
+        Assertions.assertEquals(4.5, parkingBillDTO.getVehicleCharge());
+    }
+
+    @Test
+    void get30MinuteParkingBillForVehicleType1() {
+        Integer vehicleType = 1;
+        String vehicleReg = "ABC 123";
+        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(30);
+
+        when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
+            invocation -> invocation.getArguments()[0]
+        );
+
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        );
+
+        Assertions.assertNotNull(parkingBillDTO);
+        Assertions.assertEquals(9.0, parkingBillDTO.getVehicleCharge());
+    }
 }
