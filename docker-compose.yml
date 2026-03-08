@@ -1,0 +1,7 @@
+include:
+  - ${DOCKER_LOCAL}/providers/keycloak-postgres/compose.yml
+volumes:
+  kc_postgres_data:
+networks:
+  kc_network:
+    driver: bridge

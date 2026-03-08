@@ -10,6 +10,7 @@ import com.tds.carparkapi.Service.ParkingSpaceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api")
 public class ParkingController
 {
     @Autowired
@@ -30,12 +32,14 @@ public class ParkingController
         this.parkingSpaceService = parkingSpaceService;
     }
 
-    @GetMapping("/api/parking")
+    @GetMapping("/parking")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ParkingSpaceInventoryDTO> getParkingSpaceInventory() {
         return ResponseEntity.ok(parkingSpaceService.getParkingSpaceInventory());
     }
 
-    @PostMapping("/api/parking")
+    @PostMapping("/parking")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<OccupiedParkingSpaceDTO> getNextAvailableParkingSpace(@RequestBody Map<String, Object> requestData) {
         if (!requestData.containsKey("vehicleReg")) {
             throw new InvalidDataException(
@@ -91,7 +95,8 @@ public class ParkingController
         return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType));
     }
 
-    @PostMapping("/api/parking/bill")
+    @PostMapping("/parking/bill")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ParkingBillDTO> getParkingBill(@RequestBody Map<String, Object> requestData) {
         if (!requestData.containsKey("vehicleReg")) {
             throw new InvalidDataException(
