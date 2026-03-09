@@ -6,7 +6,6 @@ import com.tds.carparkapi.ExceptionHandling.CustomExceptions.DatabaseErrorExcept
 import com.tds.carparkapi.ExceptionHandling.CustomExceptions.InvalidDataException;
 import com.tds.carparkapi.ExceptionHandling.CustomExceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,7 +37,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidDataException.class)
-    public ResponseEntity<ErrorResponseDTO> handleRInvalidData(InvalidDataException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleInvalidData(InvalidDataException ex) {
         return new ResponseEntity<>(new ErrorResponseDTO(
                 ex.getErrorCode(),
                 ex.getMessage(),
@@ -55,15 +54,5 @@ public class GlobalExceptionHandler {
                 ex.getStatus().value(),
                 Instant.now()
         ), ex.getStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDTO> handleGeneralException(Exception ex) {
-        return new ResponseEntity<>(new ErrorResponseDTO(
-                "",
-                ex.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                Instant.now()
-        ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
