@@ -4,25 +4,26 @@ import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.jd.carparkapi.respository.ParkingSpaceRepository;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.Assertions;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 class ParkingSpaceInitialiserUnitTest {
-    @Inject
-    private Integer totalSpaces = 20;
+    private final Integer totalSpaces = 20;
 
     @Mock
     private ParkingSpaceRepository parkingSpaceRepository;
@@ -30,17 +31,14 @@ class ParkingSpaceInitialiserUnitTest {
     @Mock
     private ParkingSpaceInventoryRepository parkingSpaceInventoryRepository;
 
-    @InjectMocks
     private ParkingSpaceRepositoryInitialiser parkingSpaceRepositoryInitialiser;
 
     @BeforeEach
     void setup() {
-        MockitoAnnotations.openMocks(this);
-
         parkingSpaceRepositoryInitialiser = new ParkingSpaceRepositoryInitialiser(
-                totalSpaces,
-                parkingSpaceRepository,
-                parkingSpaceInventoryRepository
+            totalSpaces,
+            parkingSpaceRepository,
+            parkingSpaceInventoryRepository
         );
     }
 
@@ -69,11 +67,20 @@ class ParkingSpaceInitialiserUnitTest {
 
         List<ParkingSpace> captives = parkingSpaceCaptor.getAllValues();
         Assertions.assertEquals(totalSpaces, captives.size());
+    }
 
-        ParkingSpace firstSpace = captives.getFirst();
-        Assertions.assertNotNull(firstSpace);
+    @Test
+    void doesNotInitialiseWhenTotalSpacesIsZero() {
+        ParkingSpaceRepositoryInitialiser zeroSpaceInitialiser = new ParkingSpaceRepositoryInitialiser(
+            0,
+            parkingSpaceRepository,
+            parkingSpaceInventoryRepository
+        );
 
-        ParkingSpace lastSpace = captives.getLast();
-        Assertions.assertNotNull(lastSpace);
+        zeroSpaceInitialiser.initialiseParkingSpaceInventory();
+        zeroSpaceInitialiser.initialiseAvailableParkingSpaces();
+
+        verify(parkingSpaceInventoryRepository, times(0)).save(Mockito.any());
+        verify(parkingSpaceRepository, times(0)).save(Mockito.any());
     }
 }

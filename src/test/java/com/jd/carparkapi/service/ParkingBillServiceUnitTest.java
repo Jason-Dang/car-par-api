@@ -5,23 +5,21 @@ import com.jd.carparkapi.entity.ParkingBill;
 import com.jd.carparkapi.exceptionhandling.customexceptions.InvalidDataException;
 import com.jd.carparkapi.respository.ParkingBillRepository;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 class ParkingBillServiceUnitTest {
 
     @Mock
@@ -29,13 +27,6 @@ class ParkingBillServiceUnitTest {
 
     @InjectMocks
     private ParkingBillService parkingBillService;
-
-    @BeforeEach
-    void init() {
-        MockitoAnnotations.openMocks(this);
-
-        parkingBillService = new ParkingBillService(parkingBillRepository);
-    }
 
     @AfterEach
     void reset() {
@@ -53,15 +44,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-                vehicleReg,
-                vehicleType,
-                timeIn,
-                timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(.1, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(.1, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -75,15 +61,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-                vehicleReg,
-                vehicleType,
-                timeIn,
-                timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(.2, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(.2, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -97,15 +78,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-                vehicleReg,
-                vehicleType,
-                timeIn,
-                timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(.4, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(.4, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -115,16 +91,9 @@ class ParkingBillServiceUnitTest {
         LocalDateTime timeIn = LocalDateTime.now();
         LocalDateTime timeOut = LocalDateTime.now().plusMinutes(1);
 
-        when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
-            invocation -> invocation.getArguments()[0]
+        InvalidDataException exception = Assertions.assertThrows(InvalidDataException.class, () ->
+            parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut)
         );
-
-        InvalidDataException exception = Assertions.assertThrows(InvalidDataException.class, () -> parkingBillService.getParkingBill(
-            vehicleReg,
-            vehicleType,
-            timeIn,
-            timeOut
-        ));
 
         Assertions.assertEquals("Vehicle type must be either: '1', '2' or '3'", exception.getMessage());
     }
@@ -140,15 +109,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-            vehicleReg,
-            vehicleType,
-            timeIn,
-            timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(1.5, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(1.5, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -162,15 +126,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-            vehicleReg,
-            vehicleType,
-            timeIn,
-            timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(3.0, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(3.0, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -184,15 +143,10 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-            vehicleReg,
-            vehicleType,
-            timeIn,
-            timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(4.5, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(4.5, parkingBillDTO.vehicleCharge());
     }
 
     @Test
@@ -206,14 +160,9 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(
-            vehicleReg,
-            vehicleType,
-            timeIn,
-            timeOut
-        );
+        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
-        Assertions.assertEquals(9.0, parkingBillDTO.getVehicleCharge());
+        Assertions.assertEquals(9.0, parkingBillDTO.vehicleCharge());
     }
 }

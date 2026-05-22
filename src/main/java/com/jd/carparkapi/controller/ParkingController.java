@@ -150,8 +150,8 @@ public class ParkingController
         ));
     }
 
-    @GetMapping("/parking/summary")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/admin/parking/summary")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ParkingSpaceSummaryDTO> getParkingSpaceSummary() {
         return ResponseEntity.ok(parkingSpaceService.getParkingSpaceSummary());
     }

@@ -5,8 +5,6 @@ import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.jd.carparkapi.respository.ParkingSpaceRepository;
 
-import jakarta.inject.Inject;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +19,6 @@ import java.util.List;
 @TestConfiguration
 class ParkingSpaceInitialiserIntegrationTest {
     @Value("20")
-    @Inject
     private Integer totalSpaces;
 
     @Autowired

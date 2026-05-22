@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/h2-console/**").denyAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/**").hasRole("USER")
                 .anyRequest().authenticated()
