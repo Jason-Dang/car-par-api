@@ -1,0 +1,70 @@
+package com.jd.carparkapi.service;
+
+import com.jd.carparkapi.dto.ParkingBillDTO;
+import com.jd.carparkapi.entity.ParkingBill;
+import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseConnectionException;
+import com.jd.carparkapi.exceptionhandling.customexceptions.InvalidDataException;
+import com.jd.carparkapi.respository.ParkingBillRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+@Service
+public class ParkingBillService {
+    private final ParkingBillRepository parkingBillRepository;
+
+    public ParkingBillService(ParkingBillRepository parkingBillRepository) {
+        this.parkingBillRepository = parkingBillRepository;
+    }
+
+    private ParkingBillDTO mapToParkingBillDTO(ParkingBill parkingBill) {
+        return new ParkingBillDTO(
+            parkingBill.getId(),
+            parkingBill.getVehicleReg(),
+            parkingBill.getVehicleCharge(),
+            parkingBill.getTimeIn(),
+            parkingBill.getTimeOut()
+        );
+    }
+
+    private BigDecimal getMinuteRate(Integer vehicleType) {
+        if (vehicleType == 1) {
+            return new BigDecimal(".1");
+        }
+
+        if (vehicleType == 2) {
+            return new BigDecimal(".2");
+        }
+
+        if (vehicleType == 3) {
+            return new BigDecimal(".4");
+        }
+
+        throw new InvalidDataException("Vehicle type must be either: '1', '2' or '3'", "err-ps4", HttpStatus.BAD_REQUEST);
+    }
+
+    public ParkingBillDTO getParkingBill(
+        String vehicleReg,
+        Integer vehicleType,
+        LocalDateTime timeIn,
+        LocalDateTime timeOut
+    ) {
+        Duration diff = Duration.between(timeIn, timeOut);
+        BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
+        BigDecimal surcharge = minutesStayed.divide(BigDecimal.valueOf(5), RoundingMode.FLOOR);
+        BigDecimal minuteRate = getMinuteRate(vehicleType);
+        BigDecimal vehicleCharge = minutesStayed.multiply(minuteRate).add(surcharge).setScale(2, RoundingMode.HALF_UP);
+
+        ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge.doubleValue(), timeIn, timeOut);
+
+        try {
+            return mapToParkingBillDTO(parkingBillRepository.save(parkingBill));
+        } catch (Exception _) {
+            throw new DatabaseConnectionException("Unable to save parking bill in the database", "err-db1" , HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+}
