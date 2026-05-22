@@ -1,7 +1,63 @@
-include:
-  - ${DOCKER_LOCAL}/providers/keycloak-postgres/compose.yml
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${KC_DB_ROOT_PASSWORD}
+      # Passed through to postgres/init.sh on first boot
+      KC_DB_USER: ${KC_DB_USER}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_DB_DATABASE: ${KC_DB_DATABASE}
+    volumes:
+      - kc_postgres_data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d
+    networks:
+      - kc_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${KC_DB_DATABASE}
+      KC_DB_USERNAME: ${KC_DB_USER}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_PASSWORD}
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      # Frontend URL determines the `iss` claim in issued tokens.
+      # Must match spring.security.oauth2.resourceserver.jwt.issuer-uri in application.properties.
+      KC_HOSTNAME_URL: http://localhost:7080
+      KC_HOSTNAME_STRICT: "false"
+      # Injected into the realm import via ${env.*} substitution (Keycloak 25+)
+      KC_TEST_USER_PASSWORD: ${KC_TEST_USER_PASSWORD}
+      KC_TEST_ADMIN_PASSWORD: ${KC_TEST_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    ports:
+      - "7080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kc_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+
 volumes:
   kc_postgres_data:
+
 networks:
   kc_network:
     driver: bridge

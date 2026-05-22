@@ -135,88 +135,79 @@ Returns a full breakdown of occupied spaces. Requires `ADMIN` role.
 ## Setup
 
 ### Prerequisites
-- Java 25+
-- Maven (or use the included `./mvnw` wrapper)
-- Docker (for Keycloak + Postgres)
-- A `dockerlocal` repo providing the Keycloak-Postgres compose file at `providers/keycloak-postgres/compose.yml`
+- Docker and Docker Compose
+- Java 25+ and Maven — only needed for the **standalone** workflow (the devcontainer provides them automatically)
 
 
-### 1. Environment
+### Environment
 
-Copy the example env file and fill in all blank values:
+Copy the example env file and fill in all blank values before starting either workflow:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable                | Purpose                                         |
-|-------------------------|-------------------------------------------------|
-| `DOCKER_LOCAL`          | Absolute path to your `dockerlocal` repo        |
-| `KC_DB_ROOT_PASSWORD`   | Postgres root password for Keycloak's DB        |
-| `KC_DB_DATABASE`        | Keycloak database name                          |
-| `KC_DB_USER`            | Keycloak database user                          |
-| `KC_DB_PASSWORD`        | Keycloak database password                      |
-| `KC_USER`               | Keycloak admin username                         |
-| `KC_PASSWORD`           | Keycloak admin password                         |
-| `H2_USER`               | H2 console username                             |
-| `H2_PASSWORD`           | H2 console password                             |
-| `KC_TEST_USER_PASSWORD` | Initial password for the `testuser` test account |
-| `KC_TEST_ADMIN_PASSWORD`| Initial password for the `testadmin` test account|
+| Variable                 | Purpose                                                    |
+|--------------------------|------------------------------------------------------------|
+| `KC_DB_ROOT_PASSWORD`    | Postgres superuser password                                |
+| `KC_DB_DATABASE`         | Keycloak database name (created by `postgres/init.sh`)     |
+| `KC_DB_USER`             | Keycloak database user (created by `postgres/init.sh`)     |
+| `KC_DB_PASSWORD`         | Keycloak database user password                            |
+| `KC_USER`                | Keycloak admin username                                    |
+| `KC_PASSWORD`            | Keycloak admin password                                    |
+| `H2_USER`                | H2 console username                                        |
+| `H2_PASSWORD`            | H2 console password                                        |
+| `KC_TEST_USER_PASSWORD`  | Initial password for the `testuser` test account           |
+| `KC_TEST_ADMIN_PASSWORD` | Initial password for the `testadmin` test account          |
 
-> The `.env` file is gitignored. Never commit credentials.
+> `.env` is gitignored — never commit credentials.
 
 
-### 2. Start Keycloak
+---
+
+## Dev Container (recommended)
+
+Opens the full stack — Postgres, Keycloak, and a Java 25 dev container — in one step. No local JDK or Maven installation required.
+
+### VS Code
+
+1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Open the repo, then run **Dev Containers: Reopen in Container** from the command palette
+
+### Dev Container CLI
 
 ```bash
-docker compose up -d
+npm install -g @devcontainers/cli
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . bash
 ```
 
-Keycloak starts on **port 7080** and auto-imports the realm from `keycloak/carparkapi-realm.json`.  
-The test user passwords are injected from the env vars `KC_TEST_USER_PASSWORD` / `KC_TEST_ADMIN_PASSWORD` at import time.
+### What starts automatically
 
-Both test accounts have `temporary: true` on their passwords — Keycloak will require a password change on first login via the browser. For direct grant (ROPC) usage in Postman/curl, update the passwords in the Keycloak admin console first.
+| Service   | Internal address       | Host port     |
+|-----------|------------------------|---------------|
+| Postgres  | `postgres:5432`        | —             |
+| Keycloak  | `keycloak:8080`        | `7080`        |
+| App shell | `/workspace` container | `8080` (when you run the app) |
 
-Keycloak admin console: `http://localhost:7080`
+Keycloak auto-imports the realm from `keycloak/carparkapi-realm.json` and injects test user passwords from `KC_TEST_USER_PASSWORD` / `KC_TEST_ADMIN_PASSWORD`.
 
+> **Keycloak JWT in the devcontainer**: the app container sets  
+> `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/...`  
+> which overrides `issuer-uri` from `application.properties`. The JWK decoder fetches public keys from the internal Docker hostname and skips issuer claim validation — this is intentional for the devcontainer environment.
 
-### 3. Configure the App
+### Running inside the container
 
-In `src/main/resources/application.properties`:
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `http://localhost:7080/realms/carparkapi` | Keycloak issuer URI |
-| `app.config.totalSpaces` | `20` | Number of parking spaces to initialise |
-| `spring.datasource.username` | _(blank)_ | H2 database user |
-| `spring.datasource.password` | _(blank)_ | H2 database password |
-
-
-### 4. Run Tests
 ```bash
-# Unit tests only
+# Tests
 ./mvnw test -Punit
-
-# Integration tests only
 ./mvnw test -Pintegration
 
-# All tests
-./mvnw test
-```
-
-
-### 5. Run the App
-```bash
+# Run the app (accessible at http://localhost:8080 on your host)
 ./mvnw spring-boot:run
 ```
 
-The API starts on **port 8080**.  
-H2 console: `http://localhost:8080/h2-console`
-
-
-### 6. Obtain a Token
-
-Using the ROPC grant (requires `directAccessGrantsEnabled: true` on the client — dev only):
+### Obtain a token (from your host machine)
 
 ```bash
 curl -s -X POST http://localhost:7080/realms/carparkapi/protocol/openid-connect/token \
@@ -224,7 +215,61 @@ curl -s -X POST http://localhost:7080/realms/carparkapi/protocol/openid-connect/
   -d "grant_type=password" \
   -d "client_id=carparkapi-client" \
   -d "username=testuser" \
-  -d "password=<your-password>" \
+  -d "password=<KC_TEST_USER_PASSWORD>" \
+  | jq -r '.access_token'
+```
+
+> Both test accounts have `temporary: true` on their passwords. For ROPC (Postman/curl) use, update the passwords via the Keycloak admin console at `http://localhost:7080` before first use.
+
+
+---
+
+## Standalone (local JDK)
+
+Run Keycloak + Postgres in Docker while the Spring Boot app runs directly on your machine.
+
+### 1. Start services
+
+```bash
+docker compose up -d
+```
+
+Keycloak is available at **`http://localhost:7080`** once healthy (~30 s).
+
+### 2. Configure the app
+
+`src/main/resources/application.properties` is pre-configured for this mode (`issuer-uri=http://localhost:7080/realms/carparkapi`). No changes needed.
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `http://localhost:7080/realms/carparkapi` | Must match Keycloak `KC_HOSTNAME_URL` |
+| `app.config.totalSpaces` | `20` | Number of parking spaces to initialise |
+
+### 3. Run tests
+
+```bash
+./mvnw test -Punit
+./mvnw test -Pintegration
+./mvnw test
+```
+
+### 4. Run the app
+
+```bash
+./mvnw spring-boot:run
+```
+
+API on **port 8080** · H2 console at `http://localhost:8080/h2-console`
+
+### 5. Obtain a token
+
+```bash
+curl -s -X POST http://localhost:7080/realms/carparkapi/protocol/openid-connect/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password" \
+  -d "client_id=carparkapi-client" \
+  -d "username=testuser" \
+  -d "password=<KC_TEST_USER_PASSWORD>" \
   | jq -r '.access_token'
 ```
 
@@ -235,7 +280,9 @@ Authorization: Bearer <token>
 ```
 
 
-### Postman
+---
+
+## Postman
 
 A Postman collection is in the `docs/` directory covering all endpoints.  
 Set a Postman environment variable `baseUrl` to `http://localhost:8080` and `token` to the access token obtained above.

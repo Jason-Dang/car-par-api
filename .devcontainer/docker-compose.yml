@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - maven-cache:/home/vscode/.m2
+    command: sleep infinity
+    environment:
+      # Spring Boot prefers jwk-set-uri over issuer-uri when both are present.
+      # The JWK decoder fetches keys from the internal Docker hostname and skips
+      # issuer claim validation — acceptable for development.
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/carparkapi/protocol/openid-connect/certs
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - kc_network
+
+volumes:
+  maven-cache:
