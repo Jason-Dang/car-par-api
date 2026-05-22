@@ -95,19 +95,20 @@ public class ParkingSpaceService {
         availableParkingSpace.setVehicleType(vehicleType);
         availableParkingSpace.setTimeIn(LocalDateTime.now());
 
+        ParkingSpace allocatedParkingSpace;
         try {
-            ParkingSpace allocatedParkingSpace = parkingSpaceRepository.save(availableParkingSpace);
-
-            if (allocatedParkingSpace.getId() == null) {
-                throw new DatabaseErrorException("Unable to save allocated parking space", "err-db2", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-            updateParkingSpaceInventory(true);
-
-            return mapToOccupiedParkingSpaceDTO(allocatedParkingSpace);
+            allocatedParkingSpace = parkingSpaceRepository.save(availableParkingSpace);
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to save allocated parking space in the database", "err-db1" , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException("Unable to save allocated parking space in the database", "err-db1", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        if (allocatedParkingSpace.getId() == null) {
+            throw new DatabaseErrorException("Unable to save allocated parking space", "err-db2", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        updateParkingSpaceInventory(true);
+
+        return mapToOccupiedParkingSpaceDTO(allocatedParkingSpace);
     }
 
     public ParkingSpace getAllocatedParkingSpace(String vehicleReg) {
@@ -121,15 +122,11 @@ public class ParkingSpaceService {
 
         try {
             parkingSpaceRepository.save(allocatedParkingSpace);
-
-            if (allocatedParkingSpace.getId() == null) {
-                throw new DatabaseErrorException("Unable to save deallocated parking space", "err-db3", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-            updateParkingSpaceInventory(false);
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to save deallocated parking space in the database", "err-db1" , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException("Unable to save deallocated parking space in the database", "err-db1", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        updateParkingSpaceInventory(false);
     }
 
     public ParkingSpaceSummaryDTO getParkingSpaceSummary() {
@@ -140,11 +137,14 @@ public class ParkingSpaceService {
         }
 
         List<ParkingSpaceSummaryItemDTO> summaryList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
 
-        for (int i = 0; i < parkingSpaces.size(); i++) {
-            ParkingSpace parkingSpace = parkingSpaces.get(i);
+        for (ParkingSpace parkingSpace : parkingSpaces) {
+            if (parkingSpace.getTimeIn() == null) {
+                continue;
+            }
 
-            Duration diff = Duration.between(parkingSpace.getTimeIn(), parkingSpace.getTimeIn());
+            Duration diff = Duration.between(parkingSpace.getTimeIn(), now);
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
             summaryList.add(new ParkingSpaceSummaryItemDTO(

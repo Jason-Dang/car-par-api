@@ -4,10 +4,8 @@ import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.jd.carparkapi.respository.ParkingSpaceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 
@@ -17,7 +15,6 @@ public class ParkingSpaceRepositoryInitialiser {
     private final ParkingSpaceRepository parkingSpaceRepository;
     private final ParkingSpaceInventoryRepository parkingSpaceInventoryRepository;
 
-    @Autowired
     public ParkingSpaceRepositoryInitialiser(
             @Value("${app.config.totalSpaces}") Integer totalSpaces,
             ParkingSpaceRepository parkingSpaceRepository,
@@ -28,29 +25,23 @@ public class ParkingSpaceRepositoryInitialiser {
         this.parkingSpaceInventoryRepository = parkingSpaceInventoryRepository;
     }
 
-    @Bean
     @EventListener(ApplicationReadyEvent.class)
-    public boolean initialiseParkingSpaceInventory() {
+    public void initialiseParkingSpaceInventory() {
         if (totalSpaces <= 0) {
-            return false;
+            return;
         }
 
         parkingSpaceInventoryRepository.save(new ParkingSpaceInventory(totalSpaces, 0));
-
-        return true;
     }
 
-    @Bean
     @EventListener(ApplicationReadyEvent.class)
-    public boolean initialiseAvailableParkingSpaces() {
+    public void initialiseAvailableParkingSpaces() {
         if (totalSpaces <= 0) {
-            return false;
+            return;
         }
 
         for (int i = 0; i < totalSpaces; i++) {
             parkingSpaceRepository.save(new ParkingSpace());
         }
-
-        return true;
     }
 }

@@ -28,7 +28,9 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
             return List.of();
         }
 
-        return ((List<String>) roles).stream()
+        @SuppressWarnings("unchecked")
+        List<String> roleList = (List<String>) roles;
+        return roleList.stream()
             .filter(role -> !role.equals("offline_access") && !role.equals("uma_authorization"))
             .map(roleName -> "ROLE_" + roleName.toUpperCase())
             .map(SimpleGrantedAuthority::new)
