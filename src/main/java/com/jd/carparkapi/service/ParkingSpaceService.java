@@ -9,6 +9,7 @@ import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseConnectionException;
 import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseErrorException;
 import com.jd.carparkapi.exceptionhandling.customexceptions.ResourceNotFoundException;
+import com.jd.carparkapi.mapper.ParkingMapper;
 import com.jd.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.jd.carparkapi.respository.ParkingSpaceRepository;
 
@@ -33,21 +34,6 @@ public class ParkingSpaceService {
     ) {
         this.parkingSpaceRepository = parkingSpaceRepository;
         this.parkingSpaceInventoryRepository = parkingSpaceInventoryRepository;
-    }
-
-    private ParkingSpacesResponse mapToParkingSpaceInventoryDTO(ParkingSpaceInventory parkingSpaceInventory) {
-        return new ParkingSpacesResponse(
-                parkingSpaceInventory.getAvailableSpaces(),
-                parkingSpaceInventory.getOccupiedSpaces()
-        );
-    }
-
-    private ParkResponse mapToOccupiedParkingSpaceDTO(ParkingSpace parkingSpace) {
-        return new ParkResponse(
-                parkingSpace.getId(),
-                parkingSpace.getVehicleReg(),
-                parkingSpace.getTimeIn()
-        );
     }
 
     public void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
@@ -93,7 +79,7 @@ public class ParkingSpaceService {
             );
         }
 
-        return mapToParkingSpaceInventoryDTO(parkingSpaceInventory);
+        return ParkingMapper.mapToParkingSpacesResponse(parkingSpaceInventory);
     }
 
     public ParkResponse allocateNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
@@ -132,7 +118,7 @@ public class ParkingSpaceService {
 
         updateParkingSpaceInventory(true);
 
-        return mapToOccupiedParkingSpaceDTO(allocatedParkingSpace);
+        return ParkingMapper.mapToParkingResponse(allocatedParkingSpace);
     }
 
     public ParkingSpace getAllocatedParkingSpace(String vehicleReg) {
@@ -165,14 +151,13 @@ public class ParkingSpaceService {
         }
 
         List<ParkingSpaceSummaryItemResponse> summaryList = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
 
         for (ParkingSpace parkingSpace : parkingSpaces) {
             if (parkingSpace.getTimeIn() == null) {
                 continue;
             }
 
-            Duration diff = Duration.between(parkingSpace.getTimeIn(), now);
+            Duration diff = Duration.between(parkingSpace.getTimeIn(), LocalDateTime.now());
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
             summaryList.add(new ParkingSpaceSummaryItemResponse(
