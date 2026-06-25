@@ -94,7 +94,7 @@ class ParkingSpaceServiceUnitTest {
     void allocateNextAvailableParkingSpace_returnsOccupiedDTO() {
         String vehicleReg = "ABC123";
         int vehicleType = 1;
-        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
 
         ParkingSpace availableSpace = mock(ParkingSpace.class);
         when(availableSpace.getId()).thenReturn(1L);
@@ -194,7 +194,7 @@ class ParkingSpaceServiceUnitTest {
     @Test
     void getParkingSpaceSummary_skipsUnoccupiedSpaces() {
         ParkingSpace occupiedSpace = mock(ParkingSpace.class);
-        when(occupiedSpace.getTimeIn()).thenReturn(LocalDateTime.now().minusMinutes(10));
+        when(occupiedSpace.getTimeIn()).thenReturn(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10));
         when(occupiedSpace.getVehicleReg()).thenReturn("ABC123");
 
         ParkingSpace emptySpace = mock(ParkingSpace.class);
@@ -211,11 +211,11 @@ class ParkingSpaceServiceUnitTest {
     @Test
     void getParkingSpaceSummary_includesAllOccupiedSpaces() {
         ParkingSpace spaceA = mock(ParkingSpace.class);
-        when(spaceA.getTimeIn()).thenReturn(LocalDateTime.now().minusMinutes(5));
+        when(spaceA.getTimeIn()).thenReturn(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(5));
         when(spaceA.getVehicleReg()).thenReturn("AAA111");
 
         ParkingSpace spaceB = mock(ParkingSpace.class);
-        when(spaceB.getTimeIn()).thenReturn(LocalDateTime.now().minusMinutes(15));
+        when(spaceB.getTimeIn()).thenReturn(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(15));
         when(spaceB.getVehicleReg()).thenReturn("BBB222");
 
         when(parkingSpaceRepository.findAll()).thenReturn(List.of(spaceA, spaceB));

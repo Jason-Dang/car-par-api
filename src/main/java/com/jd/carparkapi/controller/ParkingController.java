@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 @RestController
@@ -86,7 +87,7 @@ public class ParkingController
             );
         }
 
-        LocalDateTime timeOut = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC);
         Integer vehicleType = allocatedParkingSpace.getVehicleType();
         LocalDateTime timeIn = allocatedParkingSpace.getTimeIn();
 

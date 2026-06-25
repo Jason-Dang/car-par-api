@@ -37,8 +37,8 @@ class ParkingBillServiceUnitTest {
     void get1MinuteParkingBillForVehicleType1() {
         Integer vehicleType = 1;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(1);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -54,8 +54,8 @@ class ParkingBillServiceUnitTest {
     void get1MinuteParkingBillForVehicleType2() {
         Integer vehicleType = 2;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(1);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -71,8 +71,8 @@ class ParkingBillServiceUnitTest {
     void get1MinuteParkingBillForVehicleType3() {
         Integer vehicleType = 3;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(1);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -88,8 +88,8 @@ class ParkingBillServiceUnitTest {
     void get1MinuteParkingBillForInvalidVehicleType() {
         Integer vehicleType = 0;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(1);
 
         InvalidDataException exception = Assertions.assertThrows(InvalidDataException.class, () ->
             parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut)
@@ -102,8 +102,8 @@ class ParkingBillServiceUnitTest {
     void get5MinuteParkingBillForVehicleType1() {
         Integer vehicleType = 1;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(5);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(5);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -119,8 +119,8 @@ class ParkingBillServiceUnitTest {
     void get10MinuteParkingBillForVehicleType1() {
         Integer vehicleType = 1;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -136,8 +136,8 @@ class ParkingBillServiceUnitTest {
     void get15MinuteParkingBillForVehicleType1() {
         Integer vehicleType = 1;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(15);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(15);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]
@@ -153,8 +153,8 @@ class ParkingBillServiceUnitTest {
     void get30MinuteParkingBillForVehicleType1() {
         Integer vehicleType = 1;
         String vehicleReg = "ABC 123";
-        LocalDateTime timeIn = LocalDateTime.now();
-        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(30);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(30);
 
         when(parkingBillRepository.save(Mockito.any(ParkingBill.class))).thenAnswer(
             invocation -> invocation.getArguments()[0]

@@ -119,7 +119,7 @@ class ParkingControllerUnitTest {
         int vehicleType = 1;
         ParkRequest requestData = new ParkRequest(vehicleReg, vehicleType);
 
-        ParkResponse occupiedDTO = new ParkResponse(5L, vehicleReg, LocalDateTime.now());
+        ParkResponse occupiedDTO = new ParkResponse(5L, vehicleReg, LocalDateTime.now(ZoneOffset.UTC));
         when(parkingSpaceService.getAllocatedParkingSpace(vehicleReg)).thenReturn(null);
         when(parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType)).thenReturn(occupiedDTO);
 
@@ -163,12 +163,12 @@ class ParkingControllerUnitTest {
         String vehicleReg = "ABC123";
         ParkingBillRequest requestData = new ParkingBillRequest(vehicleReg);
 
-        LocalDateTime timeIn = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(30);
         ParkingSpace space = mock(ParkingSpace.class);
         when(space.getVehicleType()).thenReturn(1);
         when(space.getTimeIn()).thenReturn(timeIn);
 
-        ParkingBillResponse billDTO = new ParkingBillResponse(1L, vehicleReg, 9.0, timeIn, LocalDateTime.now());
+        ParkingBillResponse billDTO = new ParkingBillResponse(1L, vehicleReg, 9.0, timeIn, LocalDateTime.now(ZoneOffset.UTC));
         when(parkingSpaceService.getAllocatedParkingSpace(vehicleReg)).thenReturn(space);
         when(parkingBillService.getParkingBill(eq(vehicleReg), eq(1), eq(timeIn), any())).thenReturn(billDTO);
 

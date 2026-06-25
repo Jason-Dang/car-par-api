@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class ParkingSpaceService {
 
         availableParkingSpace.setVehicleReg(vehicleReg);
         availableParkingSpace.setVehicleType(vehicleType);
-        availableParkingSpace.setTimeIn(LocalDateTime.now());
+        availableParkingSpace.setTimeIn(LocalDateTime.now(ZoneOffset.UTC));
 
         ParkingSpace allocatedParkingSpace;
         try {
@@ -157,7 +158,7 @@ public class ParkingSpaceService {
                 continue;
             }
 
-            Duration diff = Duration.between(parkingSpace.getTimeIn(), LocalDateTime.now());
+            Duration diff = Duration.between(parkingSpace.getTimeIn(), LocalDateTime.now(ZoneOffset.UTC));
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
             summaryList.add(new ParkingSpaceSummaryItemResponse(

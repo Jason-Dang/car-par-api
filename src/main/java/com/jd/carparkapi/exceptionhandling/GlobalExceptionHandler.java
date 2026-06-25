@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
             ex.getErrorCode(),
             ex.getMessage(),
             ex.getStatus().value(),
-            LocalDateTime.now(),
+            LocalDateTime.now(ZoneOffset.UTC),
             debugInfo
         );
     }
