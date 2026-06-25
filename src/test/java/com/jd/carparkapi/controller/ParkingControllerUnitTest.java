@@ -122,7 +122,12 @@ class ParkingControllerUnitTest {
 
         ParkResponse occupiedDTO = new ParkResponse(5L, vehicleReg, LocalDateTime.now(ZoneOffset.UTC));
         when(parkingSpaceService.getAllocatedParkingSpace(vehicleReg)).thenReturn(null);
-        when(parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType)).thenReturn(occupiedDTO);
+        when(parkingSpaceService.allocateNextAvailableParkingSpace(
+            vehicleReg,
+            vehicleType,
+            null,
+            null
+        )).thenReturn(occupiedDTO);
 
         ResponseEntity<ParkResponse> response = parkingController.getNextAvailableParkingSpace(requestData);
 

@@ -20,10 +20,10 @@ public class ParkingBill {
     @Column(name="vehicleCharge", length=50, nullable=false)
     private Double vehicleCharge;
 
-    @Column(name="timeIn", length=18, nullable=false)
+    @Column(name="timeIn", length=19, nullable=false)
     private LocalDateTime timeIn;
 
-    @Column(name="timeOut", length=18, nullable=false)
+    @Column(name="timeOut", length=19, nullable=false)
     private LocalDateTime timeOut;
 
     public ParkingBill() {}

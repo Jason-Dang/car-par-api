@@ -114,7 +114,12 @@ class ParkingSpaceServiceUnitTest {
         when(parkingSpaceRepository.save(availableSpace)).thenReturn(savedSpace);
         when(parkingSpaceInventoryRepository.findOneById(1L)).thenReturn(inventory);
 
-        ParkResponse result = parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType);
+        ParkResponse result = parkingSpaceService.allocateNextAvailableParkingSpace(
+            vehicleReg,
+            vehicleType,
+            null,
+            null
+        );
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1L, result.spaceNumber());
@@ -127,7 +132,12 @@ class ParkingSpaceServiceUnitTest {
         when(parkingSpaceRepository.findNextAvailableParkingSpace()).thenReturn(null);
 
         Assertions.assertThrows(ResourceNotFoundException.class,
-            () -> parkingSpaceService.allocateNextAvailableParkingSpace("ABC123", 1));
+            () -> parkingSpaceService.allocateNextAvailableParkingSpace(
+                "ABC123",
+                1,
+                null,
+                null
+            ));
     }
 
     @Test
@@ -137,7 +147,12 @@ class ParkingSpaceServiceUnitTest {
         when(parkingSpaceRepository.findNextAvailableParkingSpace()).thenReturn(spaceWithNoId);
 
         Assertions.assertThrows(ResourceNotFoundException.class,
-            () -> parkingSpaceService.allocateNextAvailableParkingSpace("ABC123", 1));
+            () -> parkingSpaceService.allocateNextAvailableParkingSpace(
+                "ABC123",
+                1,
+                null,
+                null
+            ));
     }
 
     // --- deallocateParkingSpaceForReg ---

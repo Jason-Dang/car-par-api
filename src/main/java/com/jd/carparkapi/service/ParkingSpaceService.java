@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParkingSpaceService {
@@ -83,7 +84,12 @@ public class ParkingSpaceService {
         return ParkingMapper.mapToParkingSpacesResponse(parkingSpaceInventory);
     }
 
-    public ParkResponse allocateNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
+    public ParkResponse allocateNextAvailableParkingSpace(
+        String vehicleReg,
+        Integer vehicleType,
+        LocalDateTime timeIn,
+        LocalDateTime timeOut
+    ) {
         ParkingSpace availableParkingSpace = parkingSpaceRepository.findNextAvailableParkingSpace();
 
         if (availableParkingSpace == null || availableParkingSpace.getId() == null) {
@@ -96,7 +102,8 @@ public class ParkingSpaceService {
 
         availableParkingSpace.setVehicleReg(vehicleReg);
         availableParkingSpace.setVehicleType(vehicleType);
-        availableParkingSpace.setTimeIn(LocalDateTime.now(ZoneOffset.UTC));
+        availableParkingSpace.setTimeIn(Optional.ofNullable(timeIn).orElse(LocalDateTime.now(ZoneOffset.UTC)));
+        availableParkingSpace.setTimeOut(Optional.ofNullable(timeOut).orElse(LocalDateTime.now(ZoneOffset.UTC)));
 
         ParkingSpace allocatedParkingSpace;
         try {
@@ -158,7 +165,9 @@ public class ParkingSpaceService {
                 continue;
             }
 
-            Duration diff = Duration.between(parkingSpace.getTimeIn(), LocalDateTime.now(ZoneOffset.UTC));
+            LocalDateTime timeOut = Optional.ofNullable(parkingSpace.getTimeOut()).orElse(LocalDateTime.now(ZoneOffset.UTC));
+
+            Duration diff = Duration.between(parkingSpace.getTimeIn(), timeOut);
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
             summaryList.add(new ParkingSpaceSummaryItemResponse(

@@ -57,7 +57,12 @@ public class ParkingController
             );
         }
 
-        return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType));
+        return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(
+            vehicleReg,
+            vehicleType,
+            null,
+            null
+        ));
     }
 
     @PostMapping("/parking/bill")
@@ -106,4 +111,47 @@ public class ParkingController
     public ResponseEntity<ParkingSpaceSummaryResponse> getParkingSpaceSummary() {
         return ResponseEntity.ok(parkingSpaceService.getParkingSpaceSummary());
     }
+
+
+    // Book in advance for specified period
+    // Time + Date In
+    // Expected Time + Date Out
+    // Charge at premium rate for overstay
+    // Endpoint for checking out (handle if availability changes within interim)
+
+    @PostMapping("/parkingperiod")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<ParkingBillResponse> bookParkingPeriod(
+        @Valid
+        @RequestBody
+        ParkPeriodRequest requestData
+    ) {
+        Integer vehicleType = requestData.vehicleType();
+        String vehicleReg = requestData.vehicleReg();
+        LocalDateTime timeIn = requestData.timeIn();
+        LocalDateTime timeOut = requestData.timeOut();
+
+        if (parkingSpaceService.getAllocatedParkingSpace(vehicleReg) != null) {
+            throw new InvalidDataException(
+                "Vehicle registration already parked in space",
+                "err-ps0",
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        parkingSpaceService.allocateNextAvailableParkingSpace(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        );
+
+        return ResponseEntity.ok(parkingBillService.getParkingBill(
+            vehicleReg,
+            vehicleType,
+            timeIn,
+            timeOut
+        ));
+    }
+
 }

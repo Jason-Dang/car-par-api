@@ -1,10 +1,18 @@
 package com.jd.carparkapi.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ParkingSpace {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,42 +24,9 @@ public class ParkingSpace {
     @Column(name="vehicleType", length=1)
     private Integer vehicleType;
 
-    @Column(name="timeIn", length=18)
+    @Column(name="timeIn", length=19)
     private LocalDateTime timeIn;
 
-    public ParkingSpace() {}
-
-    public ParkingSpace(String vehicleReg, Integer vehicleType, LocalDateTime timeIn) {
-        this.vehicleReg = vehicleReg;
-        this.vehicleType = vehicleType;
-        this.timeIn = timeIn;
-    }
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public String getVehicleReg() {
-        return this.vehicleReg;
-    }
-
-    public Integer getVehicleType() {
-        return this.vehicleType;
-    }
-
-    public LocalDateTime getTimeIn() {
-        return this.timeIn;
-    }
-
-    public void setVehicleReg(String vehicleReg) {
-        this.vehicleReg = vehicleReg;
-    }
-
-    public void setVehicleType(Integer vehicleType) {
-        this.vehicleType = vehicleType;
-    }
-
-    public void setTimeIn(LocalDateTime timeIn) {
-        this.timeIn = timeIn;
-    }
+    @Column(name="timeOut", length=19)
+    private LocalDateTime timeOut;
 }
