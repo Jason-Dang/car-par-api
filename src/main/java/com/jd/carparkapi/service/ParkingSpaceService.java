@@ -17,9 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -165,9 +163,13 @@ public class ParkingSpaceService {
                 continue;
             }
 
-            LocalDateTime timeOut = Optional.ofNullable(parkingSpace.getTimeOut()).orElse(LocalDateTime.now(ZoneOffset.UTC));
+            LocalDateTime timeOut = Optional.ofNullable(parkingSpace.getTimeOut())
+                .orElse(LocalDateTime.now(ZoneOffset.UTC));
 
-            Duration diff = Duration.between(parkingSpace.getTimeIn(), timeOut);
+            ZonedDateTime timeInZoned = ZonedDateTime.of(parkingSpace.getTimeIn(), ZoneId.of("UTC"));
+            ZonedDateTime timeOutZoned = ZonedDateTime.of(timeOut, ZoneId.of("UTC"));
+
+            Duration diff = Duration.between(timeInZoned, timeOutZoned);
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
             summaryList.add(new ParkingSpaceSummaryItemResponse(

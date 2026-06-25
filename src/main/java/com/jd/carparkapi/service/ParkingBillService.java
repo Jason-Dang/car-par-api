@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Service
 public class ParkingBillService {
@@ -53,7 +55,10 @@ public class ParkingBillService {
         LocalDateTime timeIn,
         LocalDateTime timeOut
     ) {
-        Duration diff = Duration.between(timeIn, timeOut);
+        ZonedDateTime timeInZoned = ZonedDateTime.of(timeIn, ZoneId.of("UTC"));
+        ZonedDateTime timeOutZoned = ZonedDateTime.of(timeOut, ZoneId.of("UTC"));
+
+        Duration diff = Duration.between(timeInZoned, timeOutZoned);
         BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
         BigDecimal surcharge = minutesStayed.divide(BigDecimal.valueOf(5), RoundingMode.FLOOR);
         BigDecimal minuteRate = getMinuteRate(vehicleType);
