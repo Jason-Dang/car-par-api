@@ -51,6 +51,7 @@ public class ParkingController
             ));
 
         String vehicleReg = Optional.ofNullable(requestData.vehicleReg())
+            .filter(reg -> !reg.isBlank())
             .orElseThrow(() -> new InvalidDataException(
                 "Vehicle registration must be provided",
                 "err-ps0",
@@ -80,13 +81,13 @@ public class ParkingController
         @RequestBody
         ParkingBillRequest requestData
     ) {
-        String vehicleReg = Optional.ofNullable(
-            requestData.vehicleReg()
-        ).orElseThrow(() -> new InvalidDataException(
-            "Vehicle registration must be provided",
-            "err-ps0",
-            HttpStatus.BAD_REQUEST
-        ));
+        String vehicleReg = Optional.ofNullable(requestData.vehicleReg())
+            .filter(reg -> !reg.isBlank())
+            .orElseThrow(() -> new InvalidDataException(
+                "Vehicle registration must be provided",
+                "err-ps0",
+                HttpStatus.BAD_REQUEST
+            ));
 
         ParkingSpace allocatedParkingSpace = Optional.ofNullable(
             parkingSpaceService.getAllocatedParkingSpace(vehicleReg)

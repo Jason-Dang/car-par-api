@@ -5,6 +5,7 @@ import com.jd.carparkapi.dto.ParkingSpacesResponse;
 import com.jd.carparkapi.dto.ParkingSpaceSummaryResponse;
 import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.entity.ParkingSpaceInventory;
+import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseErrorException;
 import com.jd.carparkapi.exceptionhandling.customexceptions.ResourceNotFoundException;
 import com.jd.carparkapi.respository.ParkingSpaceInventoryRepository;
 import com.jd.carparkapi.respository.ParkingSpaceRepository;
@@ -98,7 +99,6 @@ class ParkingSpaceServiceUnitTest {
         LocalDateTime timeIn = LocalDateTime.now(ZoneOffset.UTC);
 
         ParkingSpace availableSpace = mock(ParkingSpace.class);
-        when(availableSpace.getId()).thenReturn(1L);
 
         ParkingSpace savedSpace = mock(ParkingSpace.class);
         when(savedSpace.getId()).thenReturn(1L);
@@ -141,12 +141,15 @@ class ParkingSpaceServiceUnitTest {
     }
 
     @Test
-    void allocateNextAvailableParkingSpace_throwsResourceNotFoundWhenSpaceHasNoId() {
-        ParkingSpace spaceWithNoId = mock(ParkingSpace.class);
-        when(spaceWithNoId.getId()).thenReturn(null);
-        when(parkingSpaceRepository.findNextAvailableParkingSpace()).thenReturn(spaceWithNoId);
+    void allocateNextAvailableParkingSpace_throwsDatabaseErrorWhenSavedSpaceHasNoId() {
+        ParkingSpace availableSpace = mock(ParkingSpace.class);
+        ParkingSpace savedSpaceWithNoId = mock(ParkingSpace.class);
+        when(savedSpaceWithNoId.getId()).thenReturn(null);
 
-        Assertions.assertThrows(ResourceNotFoundException.class,
+        when(parkingSpaceRepository.findNextAvailableParkingSpace()).thenReturn(availableSpace);
+        when(parkingSpaceRepository.save(availableSpace)).thenReturn(savedSpaceWithNoId);
+
+        Assertions.assertThrows(DatabaseErrorException.class,
             () -> parkingSpaceService.allocateNextAvailableParkingSpace(
                 "ABC123",
                 1,
@@ -160,7 +163,6 @@ class ParkingSpaceServiceUnitTest {
     @Test
     void deallocateParkingSpaceForReg_clearsParkingSpaceFields() {
         ParkingSpace space = mock(ParkingSpace.class);
-        when(space.getId()).thenReturn(1L);
         when(parkingSpaceRepository.save(space)).thenReturn(space);
 
         ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
@@ -180,7 +182,6 @@ class ParkingSpaceServiceUnitTest {
     @Test
     void deallocateParkingSpaceForReg_updatesInventory() {
         ParkingSpace space = mock(ParkingSpace.class);
-        when(space.getId()).thenReturn(1L);
         when(parkingSpaceRepository.save(space)).thenReturn(space);
 
         ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
@@ -214,7 +215,6 @@ class ParkingSpaceServiceUnitTest {
         when(occupiedSpace.getVehicleReg()).thenReturn("ABC123");
 
         ParkingSpace emptySpace = mock(ParkingSpace.class);
-        when(emptySpace.getTimeIn()).thenReturn(null);
 
         when(parkingSpaceRepository.findAll()).thenReturn(List.of(occupiedSpace, emptySpace));
 
