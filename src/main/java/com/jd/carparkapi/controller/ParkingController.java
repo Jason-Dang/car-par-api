@@ -43,16 +43,27 @@ public class ParkingController
         @RequestBody
         ParkRequest requestData
     ) {
-        Integer vehicleType = requestData.vehicleType();
-        String vehicleReg = requestData.vehicleReg();
+        Integer vehicleType = Optional.ofNullable(requestData.vehicleType())
+            .orElseThrow(() -> new InvalidDataException(
+                "Vehicle type must be provided",
+                "err-ps0",
+                HttpStatus.BAD_REQUEST
+            ));
 
-        Optional.ofNullable(
-            parkingSpaceService.getAllocatedParkingSpace(vehicleReg)
-        ).orElseThrow(() -> new InvalidDataException(
-            "Vehicle registration already parked in space",
-            "err-ps0",
-            HttpStatus.BAD_REQUEST
-        ));
+        String vehicleReg = Optional.ofNullable(requestData.vehicleReg())
+            .orElseThrow(() -> new InvalidDataException(
+                "Vehicle registration must be provided",
+                "err-ps0",
+                HttpStatus.BAD_REQUEST
+            ));
+
+        if (Optional.ofNullable(parkingSpaceService.getAllocatedParkingSpace(vehicleReg)).isPresent()) {
+            throw new InvalidDataException(
+                "Vehicle registration already parked in space",
+                "err-ps0",
+                HttpStatus.BAD_REQUEST
+            );
+        }
 
         return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(
             vehicleReg,

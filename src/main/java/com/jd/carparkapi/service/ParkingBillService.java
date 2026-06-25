@@ -35,9 +35,9 @@ public class ParkingBillService {
 
     private BigDecimal getMinuteRate(Integer vehicleType) {
         return switch (vehicleType) {
-            case 1 -> BigDecimal.valueOf(0.01);
-            case 2 -> BigDecimal.valueOf(0.02);
-            case 3 -> BigDecimal.valueOf(0.04);
+            case 1 -> BigDecimal.valueOf(0.1);
+            case 2 -> BigDecimal.valueOf(0.2);
+            case 3 -> BigDecimal.valueOf(0.4);
             default -> throw new InvalidDataException(
                 "Vehicle type must be either: '1', '2' or '3'",
                 "err-ps4",
