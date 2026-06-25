@@ -1,6 +1,6 @@
 package com.jd.carparkapi.service;
 
-import com.jd.carparkapi.dto.ParkingBillDTO;
+import com.jd.carparkapi.dto.ParkingBillResponse;
 import com.jd.carparkapi.entity.ParkingBill;
 import com.jd.carparkapi.exceptionhandling.customexceptions.InvalidDataException;
 import com.jd.carparkapi.respository.ParkingBillRepository;
@@ -44,7 +44,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(.1, parkingBillDTO.vehicleCharge());
@@ -61,7 +61,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(.2, parkingBillDTO.vehicleCharge());
@@ -78,7 +78,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(.4, parkingBillDTO.vehicleCharge());
@@ -109,7 +109,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(1.5, parkingBillDTO.vehicleCharge());
@@ -126,7 +126,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(3.0, parkingBillDTO.vehicleCharge());
@@ -143,7 +143,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(4.5, parkingBillDTO.vehicleCharge());
@@ -160,7 +160,7 @@ class ParkingBillServiceUnitTest {
             invocation -> invocation.getArguments()[0]
         );
 
-        ParkingBillDTO parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
+        ParkingBillResponse parkingBillDTO = parkingBillService.getParkingBill(vehicleReg, vehicleType, timeIn, timeOut);
 
         Assertions.assertNotNull(parkingBillDTO);
         Assertions.assertEquals(9.0, parkingBillDTO.vehicleCharge());

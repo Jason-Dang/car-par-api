@@ -3,11 +3,12 @@ package com.jd.carparkapi.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
-public record ErrorResponseDTO(
+public record ErrorResponse(
     String errorCode,
     String message,
     int status,
-    Instant timestamp,
+    LocalDateTime timestamp,
     @JsonInclude(JsonInclude.Include.NON_NULL) String debugInfo
 ) {}

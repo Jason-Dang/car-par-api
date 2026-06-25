@@ -1,14 +1,12 @@
 package com.jd.carparkapi.controller;
 
-import com.jd.carparkapi.dto.OccupiedParkingSpaceDTO;
-import com.jd.carparkapi.dto.ParkingBillDTO;
-import com.jd.carparkapi.dto.ParkingSpaceInventoryDTO;
-import com.jd.carparkapi.dto.ParkingSpaceSummaryDTO;
+import com.jd.carparkapi.dto.*;
 import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.exceptionhandling.customexceptions.InvalidDataException;
 import com.jd.carparkapi.service.ParkingBillService;
 import com.jd.carparkapi.service.ParkingSpaceService;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,55 +34,19 @@ public class ParkingController
 
     @GetMapping("/parking")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<ParkingSpaceInventoryDTO> getParkingSpaceInventory() {
+    public ResponseEntity<ParkingSpacesResponse> getParkingSpaceInventory() {
         return ResponseEntity.ok(parkingSpaceService.getParkingSpaceInventory());
     }
 
     @PostMapping("/parking")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<OccupiedParkingSpaceDTO> getNextAvailableParkingSpace(@RequestBody Map<String, Object> requestData) {
-        if (!requestData.containsKey(VEHICLE_REG)) {
-            throw new InvalidDataException(
-                "Vehicle registration must be provided",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        if (!requestData.containsKey(VEHICLE_TYPE)) {
-            throw new InvalidDataException(
-                "Vehicle type must be provided",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        if (requestData.get(VEHICLE_REG) == null) {
-            throw new InvalidDataException(
-                "Vehicle registration cannot be null",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        if (requestData.get(VEHICLE_TYPE) == null) {
-            throw new InvalidDataException(
-                "Vehicle type cannot be null",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        Integer vehicleType = Integer.parseInt(requestData.get(VEHICLE_TYPE).toString());
-        String vehicleReg = requestData.get(VEHICLE_REG).toString();
-
-        if (vehicleReg.isEmpty()) {
-            throw new InvalidDataException(
-                "Vehicle registration cannot be empty",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
+    public ResponseEntity<ParkResponse> getNextAvailableParkingSpace(
+        @Valid
+        @RequestBody
+        ParkRequest requestData
+    ) {
+        Integer vehicleType = requestData.vehicleType();
+        String vehicleReg = requestData.vehicleReg();
 
         if (parkingSpaceService.getAllocatedParkingSpace(vehicleReg) != null) {
             throw new InvalidDataException(
@@ -99,8 +61,12 @@ public class ParkingController
 
     @PostMapping("/parking/bill")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<ParkingBillDTO> getParkingBill(@RequestBody Map<String, Object> requestData) {
-        if (!requestData.containsKey(VEHICLE_REG)) {
+    public ResponseEntity<ParkingBillResponse> getParkingBill(
+        @Valid
+        @RequestBody
+        ParkingBillRequest requestData
+    ) {
+        if (requestData.vehicleReg() == null || requestData.vehicleReg().isEmpty()) {
             throw new InvalidDataException(
                 "Vehicle registration must be provided",
                 "err-ps0",
@@ -108,23 +74,7 @@ public class ParkingController
             );
         }
 
-        if (requestData.get(VEHICLE_REG) == null) {
-            throw new InvalidDataException(
-                "Vehicle registration cannot be null",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        String vehicleReg = requestData.get(VEHICLE_REG).toString();
-
-        if (vehicleReg.isEmpty()) {
-            throw new InvalidDataException(
-                "Vehicle registration cannot be empty",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
+        String vehicleReg = requestData.vehicleReg();
 
         ParkingSpace allocatedParkingSpace = parkingSpaceService.getAllocatedParkingSpace(vehicleReg);
 
@@ -152,7 +102,7 @@ public class ParkingController
 
     @GetMapping("/admin/parking/summary")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ParkingSpaceSummaryDTO> getParkingSpaceSummary() {
+    public ResponseEntity<ParkingSpaceSummaryResponse> getParkingSpaceSummary() {
         return ResponseEntity.ok(parkingSpaceService.getParkingSpaceSummary());
     }
 }

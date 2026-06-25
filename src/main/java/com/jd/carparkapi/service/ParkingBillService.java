@@ -1,6 +1,6 @@
 package com.jd.carparkapi.service;
 
-import com.jd.carparkapi.dto.ParkingBillDTO;
+import com.jd.carparkapi.dto.ParkingBillResponse;
 import com.jd.carparkapi.entity.ParkingBill;
 import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseConnectionException;
 import com.jd.carparkapi.exceptionhandling.customexceptions.InvalidDataException;
@@ -21,8 +21,8 @@ public class ParkingBillService {
         this.parkingBillRepository = parkingBillRepository;
     }
 
-    private ParkingBillDTO mapToParkingBillDTO(ParkingBill parkingBill) {
-        return new ParkingBillDTO(
+    private ParkingBillResponse mapToParkingBillDTO(ParkingBill parkingBill) {
+        return new ParkingBillResponse(
             parkingBill.getId(),
             parkingBill.getVehicleReg(),
             parkingBill.getVehicleCharge(),
@@ -47,7 +47,7 @@ public class ParkingBillService {
         throw new InvalidDataException("Vehicle type must be either: '1', '2' or '3'", "err-ps4", HttpStatus.BAD_REQUEST);
     }
 
-    public ParkingBillDTO getParkingBill(
+    public ParkingBillResponse getParkingBill(
         String vehicleReg,
         Integer vehicleType,
         LocalDateTime timeIn,

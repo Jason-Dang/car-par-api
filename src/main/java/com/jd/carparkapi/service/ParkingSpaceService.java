@@ -1,9 +1,9 @@
 package com.jd.carparkapi.service;
 
-import com.jd.carparkapi.dto.OccupiedParkingSpaceDTO;
-import com.jd.carparkapi.dto.ParkingSpaceInventoryDTO;
-import com.jd.carparkapi.dto.ParkingSpaceSummaryDTO;
-import com.jd.carparkapi.dto.ParkingSpaceSummaryItemDTO;
+import com.jd.carparkapi.dto.ParkResponse;
+import com.jd.carparkapi.dto.ParkingSpacesResponse;
+import com.jd.carparkapi.dto.ParkingSpaceSummaryResponse;
+import com.jd.carparkapi.dto.ParkingSpaceSummaryItemResponse;
 import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.exceptionhandling.customexceptions.DatabaseConnectionException;
@@ -35,15 +35,15 @@ public class ParkingSpaceService {
         this.parkingSpaceInventoryRepository = parkingSpaceInventoryRepository;
     }
 
-    private ParkingSpaceInventoryDTO mapToParkingSpaceInventoryDTO(ParkingSpaceInventory parkingSpaceInventory) {
-        return new ParkingSpaceInventoryDTO(
+    private ParkingSpacesResponse mapToParkingSpaceInventoryDTO(ParkingSpaceInventory parkingSpaceInventory) {
+        return new ParkingSpacesResponse(
                 parkingSpaceInventory.getAvailableSpaces(),
                 parkingSpaceInventory.getOccupiedSpaces()
         );
     }
 
-    private OccupiedParkingSpaceDTO mapToOccupiedParkingSpaceDTO(ParkingSpace parkingSpace) {
-        return new OccupiedParkingSpaceDTO(
+    private ParkResponse mapToOccupiedParkingSpaceDTO(ParkingSpace parkingSpace) {
+        return new ParkResponse(
                 parkingSpace.getId(),
                 parkingSpace.getVehicleReg(),
                 parkingSpace.getTimeIn()
@@ -54,7 +54,11 @@ public class ParkingSpaceService {
         ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
         if (parkingSpaceInventory == null) {
-            throw new ResourceNotFoundException("No parking space inventory found", "err-ps1", HttpStatus.NOT_FOUND);
+            throw new ResourceNotFoundException(
+                "No parking space inventory found",
+                "err-ps1",
+                HttpStatus.NOT_FOUND
+            );
         }
 
         parkingSpaceInventory.setAvailableSpaces(
@@ -70,25 +74,37 @@ public class ParkingSpaceService {
         try {
             parkingSpaceInventoryRepository.save(parkingSpaceInventory);
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to update parking space inventory in the database", "err-db1" , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException(
+                "Unable to update parking space inventory in the database",
+                "err-db1",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
-    public ParkingSpaceInventoryDTO getParkingSpaceInventory() {
+    public ParkingSpacesResponse getParkingSpaceInventory() {
         ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
 
         if (parkingSpaceInventory == null) {
-            throw new ResourceNotFoundException("No parking space inventory found", "err-ps1", HttpStatus.NOT_FOUND);
+            throw new ResourceNotFoundException(
+                "No parking space inventory found",
+                "err-ps1",
+                HttpStatus.NOT_FOUND
+            );
         }
 
         return mapToParkingSpaceInventoryDTO(parkingSpaceInventory);
     }
 
-    public OccupiedParkingSpaceDTO allocateNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
+    public ParkResponse allocateNextAvailableParkingSpace(String vehicleReg, Integer vehicleType) {
         ParkingSpace availableParkingSpace = parkingSpaceRepository.findNextAvailableParkingSpace();
 
         if (availableParkingSpace == null || availableParkingSpace.getId() == null) {
-            throw new ResourceNotFoundException("No available parking space found", "err-ps3", HttpStatus.NOT_FOUND);
+            throw new ResourceNotFoundException(
+                "No available parking space found",
+                "err-ps3",
+                HttpStatus.NOT_FOUND
+            );
         }
 
         availableParkingSpace.setVehicleReg(vehicleReg);
@@ -99,11 +115,19 @@ public class ParkingSpaceService {
         try {
             allocatedParkingSpace = parkingSpaceRepository.save(availableParkingSpace);
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to save allocated parking space in the database", "err-db1", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException(
+                "Unable to save allocated parking space in the database",
+                "err-db1",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
 
         if (allocatedParkingSpace.getId() == null) {
-            throw new DatabaseErrorException("Unable to save allocated parking space", "err-db2", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseErrorException(
+                "Unable to save allocated parking space",
+                "err-db2",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
 
         updateParkingSpaceInventory(true);
@@ -123,20 +147,24 @@ public class ParkingSpaceService {
         try {
             parkingSpaceRepository.save(allocatedParkingSpace);
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to save deallocated parking space in the database", "err-db1", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException(
+                "Unable to save deallocated parking space in the database",
+                "err-db1",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
 
         updateParkingSpaceInventory(false);
     }
 
-    public ParkingSpaceSummaryDTO getParkingSpaceSummary() {
+    public ParkingSpaceSummaryResponse getParkingSpaceSummary() {
         List<ParkingSpace> parkingSpaces = parkingSpaceRepository.findAll();
 
         if (parkingSpaces.isEmpty()) {
-            return new ParkingSpaceSummaryDTO(List.of());
+            return new ParkingSpaceSummaryResponse(List.of());
         }
 
-        List<ParkingSpaceSummaryItemDTO> summaryList = new ArrayList<>();
+        List<ParkingSpaceSummaryItemResponse> summaryList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
         for (ParkingSpace parkingSpace : parkingSpaces) {
@@ -147,12 +175,12 @@ public class ParkingSpaceService {
             Duration diff = Duration.between(parkingSpace.getTimeIn(), now);
             BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
 
-            summaryList.add(new ParkingSpaceSummaryItemDTO(
+            summaryList.add(new ParkingSpaceSummaryItemResponse(
                 parkingSpace.getVehicleReg(),
                 minutesStayed.intValueExact()
             ));
         }
 
-        return new ParkingSpaceSummaryDTO(summaryList);
+        return new ParkingSpaceSummaryResponse(summaryList);
     }
 }

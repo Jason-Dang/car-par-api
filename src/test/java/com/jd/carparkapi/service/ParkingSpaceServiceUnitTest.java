@@ -1,8 +1,8 @@
 package com.jd.carparkapi.service;
 
-import com.jd.carparkapi.dto.OccupiedParkingSpaceDTO;
-import com.jd.carparkapi.dto.ParkingSpaceInventoryDTO;
-import com.jd.carparkapi.dto.ParkingSpaceSummaryDTO;
+import com.jd.carparkapi.dto.ParkResponse;
+import com.jd.carparkapi.dto.ParkingSpacesResponse;
+import com.jd.carparkapi.dto.ParkingSpaceSummaryResponse;
 import com.jd.carparkapi.entity.ParkingSpace;
 import com.jd.carparkapi.entity.ParkingSpaceInventory;
 import com.jd.carparkapi.exceptionhandling.customexceptions.ResourceNotFoundException;
@@ -48,10 +48,14 @@ class ParkingSpaceServiceUnitTest {
 
     @Test
     void getParkingSpaceInventory_returnsDTO() {
-        ParkingSpaceInventory inventory = new ParkingSpaceInventory(20, 3);
+        ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
+                .availableSpaces(20)
+                .occupiedSpaces(3)
+                .build();
+
         when(parkingSpaceInventoryRepository.findOneById(1L)).thenReturn(inventory);
 
-        ParkingSpaceInventoryDTO result = parkingSpaceService.getParkingSpaceInventory();
+        ParkingSpacesResponse result = parkingSpaceService.getParkingSpaceInventory();
 
         Assertions.assertEquals(20, result.availableSpaces());
         Assertions.assertEquals(3, result.occupiedSpaces());
@@ -100,13 +104,16 @@ class ParkingSpaceServiceUnitTest {
         when(savedSpace.getVehicleReg()).thenReturn(vehicleReg);
         when(savedSpace.getTimeIn()).thenReturn(timeIn);
 
-        ParkingSpaceInventory inventory = new ParkingSpaceInventory(20, 0);
+        ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
+                .availableSpaces(20)
+                .occupiedSpaces(0)
+                .build();
 
         when(parkingSpaceRepository.findNextAvailableParkingSpace()).thenReturn(availableSpace);
         when(parkingSpaceRepository.save(availableSpace)).thenReturn(savedSpace);
         when(parkingSpaceInventoryRepository.findOneById(1L)).thenReturn(inventory);
 
-        OccupiedParkingSpaceDTO result = parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType);
+        ParkResponse result = parkingSpaceService.allocateNextAvailableParkingSpace(vehicleReg, vehicleType);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1L, result.spaceNumber());
@@ -140,7 +147,10 @@ class ParkingSpaceServiceUnitTest {
         when(space.getId()).thenReturn(1L);
         when(parkingSpaceRepository.save(space)).thenReturn(space);
 
-        ParkingSpaceInventory inventory = new ParkingSpaceInventory(19, 1);
+        ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
+                .availableSpaces(19)
+                .occupiedSpaces(1)
+                .build();
         when(parkingSpaceInventoryRepository.findOneById(1L)).thenReturn(inventory);
 
         parkingSpaceService.deallocateParkingSpaceForReg(space);
@@ -157,7 +167,10 @@ class ParkingSpaceServiceUnitTest {
         when(space.getId()).thenReturn(1L);
         when(parkingSpaceRepository.save(space)).thenReturn(space);
 
-        ParkingSpaceInventory inventory = new ParkingSpaceInventory(19, 1);
+        ParkingSpaceInventory inventory = ParkingSpaceInventory.builder()
+                .availableSpaces(19)
+                .occupiedSpaces(1)
+                .build();
         when(parkingSpaceInventoryRepository.findOneById(1L)).thenReturn(inventory);
 
         parkingSpaceService.deallocateParkingSpaceForReg(space);
@@ -172,7 +185,7 @@ class ParkingSpaceServiceUnitTest {
     void getParkingSpaceSummary_returnsEmptySummaryWhenNoParkingSpaces() {
         when(parkingSpaceRepository.findAll()).thenReturn(List.of());
 
-        ParkingSpaceSummaryDTO result = parkingSpaceService.getParkingSpaceSummary();
+        ParkingSpaceSummaryResponse result = parkingSpaceService.getParkingSpaceSummary();
 
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.items().isEmpty());
@@ -189,7 +202,7 @@ class ParkingSpaceServiceUnitTest {
 
         when(parkingSpaceRepository.findAll()).thenReturn(List.of(occupiedSpace, emptySpace));
 
-        ParkingSpaceSummaryDTO result = parkingSpaceService.getParkingSpaceSummary();
+        ParkingSpaceSummaryResponse result = parkingSpaceService.getParkingSpaceSummary();
 
         Assertions.assertEquals(1, result.items().size());
         Assertions.assertEquals("ABC123", result.items().getFirst().vehicleReg());
@@ -207,7 +220,7 @@ class ParkingSpaceServiceUnitTest {
 
         when(parkingSpaceRepository.findAll()).thenReturn(List.of(spaceA, spaceB));
 
-        ParkingSpaceSummaryDTO result = parkingSpaceService.getParkingSpaceSummary();
+        ParkingSpaceSummaryResponse result = parkingSpaceService.getParkingSpaceSummary();
 
         Assertions.assertEquals(2, result.items().size());
         Assertions.assertEquals("AAA111", result.items().get(0).vehicleReg());

@@ -31,7 +31,15 @@ public class ParkingSpaceRepositoryInitialiser {
             return;
         }
 
-        parkingSpaceInventoryRepository.save(new ParkingSpaceInventory(totalSpaces, 0));
+//        parkingSpaceInventoryRepository.save(new ParkingSpaceInventory(totalSpaces, 0));
+
+        parkingSpaceInventoryRepository.save(
+            ParkingSpaceInventory.builder()
+                .availableSpaces(totalSpaces)
+                .occupiedSpaces(0)
+                .build()
+        );
+
     }
 
     @EventListener(ApplicationReadyEvent.class)
