@@ -37,15 +37,13 @@ public class ParkingSpaceService {
     }
 
     public void updateParkingSpaceInventory(boolean allocatedParkingSpace) {
-        ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
-
-        if (parkingSpaceInventory == null) {
-            throw new ResourceNotFoundException(
-                "No parking space inventory found",
-                "err-ps1",
-                HttpStatus.NOT_FOUND
-            );
-        }
+        ParkingSpaceInventory parkingSpaceInventory = Optional.ofNullable(
+            parkingSpaceInventoryRepository.findOneById(1L)
+        ).orElseThrow(() -> new ResourceNotFoundException(
+            "No parking space inventory found",
+            "err-ps1",
+            HttpStatus.NOT_FOUND
+        ));
 
         parkingSpaceInventory.setAvailableSpaces(
                 parkingSpaceInventory.getAvailableSpaces()
@@ -69,15 +67,13 @@ public class ParkingSpaceService {
     }
 
     public ParkingSpacesResponse getParkingSpaceInventory() {
-        ParkingSpaceInventory parkingSpaceInventory = parkingSpaceInventoryRepository.findOneById(1L);
-
-        if (parkingSpaceInventory == null) {
-            throw new ResourceNotFoundException(
-                "No parking space inventory found",
-                "err-ps1",
-                HttpStatus.NOT_FOUND
-            );
-        }
+        ParkingSpaceInventory parkingSpaceInventory = Optional.ofNullable(
+            parkingSpaceInventoryRepository.findOneById(1L)
+        ).orElseThrow(() -> new ResourceNotFoundException(
+            "No parking space inventory found",
+            "err-ps1",
+            HttpStatus.NOT_FOUND
+        ));
 
         return ParkingMapper.mapToParkingSpacesResponse(parkingSpaceInventory);
     }
@@ -88,15 +84,13 @@ public class ParkingSpaceService {
         LocalDateTime timeIn,
         LocalDateTime timeOut
     ) {
-        ParkingSpace availableParkingSpace = parkingSpaceRepository.findNextAvailableParkingSpace();
-
-        if (availableParkingSpace == null || availableParkingSpace.getId() == null) {
-            throw new ResourceNotFoundException(
-                "No available parking space found",
-                "err-ps3",
-                HttpStatus.NOT_FOUND
-            );
-        }
+        ParkingSpace availableParkingSpace = Optional.ofNullable(
+            parkingSpaceRepository.findNextAvailableParkingSpace()
+        ).orElseThrow(() -> new ResourceNotFoundException(
+            "No available parking space found",
+            "err-ps3",
+            HttpStatus.NOT_FOUND
+        ));
 
         availableParkingSpace.setVehicleReg(vehicleReg);
         availableParkingSpace.setVehicleType(vehicleType);
@@ -114,13 +108,13 @@ public class ParkingSpaceService {
             );
         }
 
-        if (allocatedParkingSpace.getId() == null) {
-            throw new DatabaseErrorException(
-                "Unable to save allocated parking space",
-                "err-db2",
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
+        Optional.ofNullable(
+            allocatedParkingSpace.getId()
+        ).orElseThrow(() -> new DatabaseErrorException(
+            "Unable to save allocated parking space",
+            "err-db2",
+            HttpStatus.INTERNAL_SERVER_ERROR
+        ));
 
         updateParkingSpaceInventory(true);
 
@@ -158,25 +152,30 @@ public class ParkingSpaceService {
 
         List<ParkingSpaceSummaryItemResponse> summaryList = new ArrayList<>();
 
-        for (ParkingSpace parkingSpace : parkingSpaces) {
-            if (parkingSpace.getTimeIn() == null) {
-                continue;
+        parkingSpaces.forEach(
+            parkingSpace -> {
+                if (Optional.ofNullable(parkingSpace.getVehicleReg()).isEmpty()) {
+                    return;
+                }
+
+                LocalDateTime timeIn = Optional.ofNullable(parkingSpace.getTimeIn())
+                    .orElse(LocalDateTime.now(ZoneOffset.UTC));
+
+                LocalDateTime timeOut = Optional.ofNullable(parkingSpace.getTimeOut())
+                    .orElse(LocalDateTime.now(ZoneOffset.UTC));
+
+                ZonedDateTime timeInZoned = ZonedDateTime.of(timeIn, ZoneId.of("UTC"));
+                ZonedDateTime timeOutZoned = ZonedDateTime.of(timeOut, ZoneId.of("UTC"));
+
+                Duration diff = Duration.between(timeInZoned, timeOutZoned);
+                BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
+
+                summaryList.add(new ParkingSpaceSummaryItemResponse(
+                    parkingSpace.getVehicleReg(),
+                    minutesStayed.intValueExact()
+                ));
             }
-
-            LocalDateTime timeOut = Optional.ofNullable(parkingSpace.getTimeOut())
-                .orElse(LocalDateTime.now(ZoneOffset.UTC));
-
-            ZonedDateTime timeInZoned = ZonedDateTime.of(parkingSpace.getTimeIn(), ZoneId.of("UTC"));
-            ZonedDateTime timeOutZoned = ZonedDateTime.of(timeOut, ZoneId.of("UTC"));
-
-            Duration diff = Duration.between(timeInZoned, timeOutZoned);
-            BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
-
-            summaryList.add(new ParkingSpaceSummaryItemResponse(
-                parkingSpace.getVehicleReg(),
-                minutesStayed.intValueExact()
-            ));
-        }
+        );
 
         return new ParkingSpaceSummaryResponse(summaryList);
     }

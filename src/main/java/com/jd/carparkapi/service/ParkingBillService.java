@@ -34,19 +34,16 @@ public class ParkingBillService {
     }
 
     private BigDecimal getMinuteRate(Integer vehicleType) {
-        if (vehicleType == 1) {
-            return new BigDecimal(".1");
-        }
-
-        if (vehicleType == 2) {
-            return new BigDecimal(".2");
-        }
-
-        if (vehicleType == 3) {
-            return new BigDecimal(".4");
-        }
-
-        throw new InvalidDataException("Vehicle type must be either: '1', '2' or '3'", "err-ps4", HttpStatus.BAD_REQUEST);
+        return switch (vehicleType) {
+            case 1 -> BigDecimal.valueOf(0.01);
+            case 2 -> BigDecimal.valueOf(0.02);
+            case 3 -> BigDecimal.valueOf(0.04);
+            default -> throw new InvalidDataException(
+                "Vehicle type must be either: '1', '2' or '3'",
+                "err-ps4",
+                HttpStatus.BAD_REQUEST
+            );
+        };
     }
 
     public ParkingBillResponse getParkingBill(
@@ -62,14 +59,20 @@ public class ParkingBillService {
         BigDecimal minutesStayed = BigDecimal.valueOf(diff.toMinutes());
         BigDecimal surcharge = minutesStayed.divide(BigDecimal.valueOf(5), RoundingMode.FLOOR);
         BigDecimal minuteRate = getMinuteRate(vehicleType);
-        BigDecimal vehicleCharge = minutesStayed.multiply(minuteRate).add(surcharge).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal vehicleCharge = minutesStayed.multiply(minuteRate)
+            .add(surcharge)
+            .setScale(2, RoundingMode.HALF_UP);
 
         ParkingBill parkingBill = new ParkingBill(vehicleReg, vehicleCharge.doubleValue(), timeIn, timeOut);
 
         try {
             return mapToParkingBillDTO(parkingBillRepository.save(parkingBill));
         } catch (Exception _) {
-            throw new DatabaseConnectionException("Unable to save parking bill in the database", "err-db1" , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new DatabaseConnectionException(
+                "Unable to save parking bill in the database",
+                "err-db1",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 }

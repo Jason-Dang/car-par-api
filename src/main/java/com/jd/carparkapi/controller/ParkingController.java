@@ -15,15 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class ParkingController
 {
-    private static final String VEHICLE_REG = "vehicleReg";
-    private static final String VEHICLE_TYPE = "vehicleType";
-
     private final ParkingSpaceService parkingSpaceService;
 
     private final ParkingBillService parkingBillService;
@@ -49,13 +46,13 @@ public class ParkingController
         Integer vehicleType = requestData.vehicleType();
         String vehicleReg = requestData.vehicleReg();
 
-        if (parkingSpaceService.getAllocatedParkingSpace(vehicleReg) != null) {
-            throw new InvalidDataException(
-                "Vehicle registration already parked in space",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
+        Optional.ofNullable(
+            parkingSpaceService.getAllocatedParkingSpace(vehicleReg)
+        ).orElseThrow(() -> new InvalidDataException(
+            "Vehicle registration already parked in space",
+            "err-ps0",
+            HttpStatus.BAD_REQUEST
+        ));
 
         return ResponseEntity.ok(parkingSpaceService.allocateNextAvailableParkingSpace(
             vehicleReg,
@@ -72,25 +69,21 @@ public class ParkingController
         @RequestBody
         ParkingBillRequest requestData
     ) {
-        if (requestData.vehicleReg() == null || requestData.vehicleReg().isEmpty()) {
-            throw new InvalidDataException(
-                "Vehicle registration must be provided",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
+        String vehicleReg = Optional.ofNullable(
+            requestData.vehicleReg()
+        ).orElseThrow(() -> new InvalidDataException(
+            "Vehicle registration must be provided",
+            "err-ps0",
+            HttpStatus.BAD_REQUEST
+        ));
 
-        String vehicleReg = requestData.vehicleReg();
-
-        ParkingSpace allocatedParkingSpace = parkingSpaceService.getAllocatedParkingSpace(vehicleReg);
-
-        if (allocatedParkingSpace == null) {
-            throw new InvalidDataException(
-                "Vehicle registration not found in any parking spaces",
-                "err-ps0",
-                HttpStatus.BAD_REQUEST
-            );
-        }
+        ParkingSpace allocatedParkingSpace = Optional.ofNullable(
+            parkingSpaceService.getAllocatedParkingSpace(vehicleReg)
+        ).orElseThrow(() -> new InvalidDataException(
+            "Vehicle registration not found in any parking spaces",
+            "err-ps0",
+            HttpStatus.BAD_REQUEST
+        ));
 
         LocalDateTime timeOut = LocalDateTime.now(ZoneOffset.UTC);
         Integer vehicleType = allocatedParkingSpace.getVehicleType();
@@ -118,7 +111,6 @@ public class ParkingController
     // Expected Time + Date Out
     // Charge at premium rate for overstay
     // Endpoint for checking out (handle if availability changes within interim)
-
     @PostMapping("/parkingperiod")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ParkingBillResponse> bookParkingPeriod(
@@ -131,7 +123,7 @@ public class ParkingController
         LocalDateTime timeIn = requestData.timeIn();
         LocalDateTime timeOut = requestData.timeOut();
 
-        if (parkingSpaceService.getAllocatedParkingSpace(vehicleReg) != null) {
+        if (Optional.ofNullable(parkingSpaceService.getAllocatedParkingSpace(vehicleReg)).isPresent()) {
             throw new InvalidDataException(
                 "Vehicle registration already parked in space",
                 "err-ps0",
